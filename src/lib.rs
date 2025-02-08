@@ -1,13 +1,11 @@
 use core::f64;
 use std::{
-    array,
     collections::{HashMap, HashSet},
-    fmt::Display,
     hash::Hash,
 };
 
 use ndarray::{
-    Array, Array1, Array2, ArrayBase, Axis, Data, DimAdd, Dimension, Ix1, NdFloat, RawData,
+    Array1, Array2, Axis,
 };
 use num_traits::{Bounded, Float};
 
@@ -129,11 +127,10 @@ impl<F: Float> MinMaxScaler<F> {
 
 #[cfg(test)]
 mod tests {
-    use ndarray::{arr2, Shape, ShapeBuilder};
+    use ndarray::arr2;
     use rand::{
         rng,
-        seq::{IteratorRandom, SliceRandom},
-        thread_rng,
+        seq::SliceRandom,
     };
     use serde::{Deserialize, Serialize};
 

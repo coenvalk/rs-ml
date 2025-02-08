@@ -4,10 +4,8 @@ use std::{
     hash::Hash,
 };
 
-use ndarray::{
-    Array1, Array2, Axis,
-};
-use num_traits::{Bounded, Float};
+use ndarray::{Array1, Array2, Axis};
+use num_traits::Float;
 
 #[derive(Debug)]
 struct NBdata {
@@ -45,7 +43,7 @@ impl StandardScaler {
 }
 
 impl<Label: Hash + Eq + Clone> GaussianNB<Label> {
-    pub fn fit(arr: &Array2<f64>, y: &Vec<Label>) -> Self {
+    pub fn fit(arr: &Array2<f64>, y: &[Label]) -> Self {
         let labels: HashSet<_> = y.iter().collect();
         let mut data = HashMap::new();
 
@@ -128,10 +126,7 @@ impl<F: Float> MinMaxScaler<F> {
 #[cfg(test)]
 mod tests {
     use ndarray::arr2;
-    use rand::{
-        rng,
-        seq::SliceRandom,
-    };
+    use rand::{rng, seq::SliceRandom};
     use serde::{Deserialize, Serialize};
 
     use super::*;

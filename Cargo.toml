@@ -1,0 +1,11 @@
+[package]
+name = "rs-ml"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+csv = "1.3.1"
+ndarray = "0.16.1"
+num-traits = "0.2.19"
+rand = "0.9.0"
+serde = { version = "1.0.217", features = ["derive"] }

@@ -1,12 +1,8 @@
 use core::f64;
-use std::{
-    collections::{HashMap, HashSet},
-    hash::Hash,
-};
+use std::hash::Hash;
 
 use classification::Classifier;
-use ndarray::{Array, Array1, Array2, Axis, Dimension};
-use num_traits::Float;
+use ndarray::{Array, Array2, Axis, Dimension};
 
 pub mod classification;
 pub mod transformer;

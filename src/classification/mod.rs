@@ -1,4 +1,3 @@
-use ndarray::{Array1, Array2};
 use std::{collections::HashMap, hash::Hash};
 
 pub mod naive_bayes;

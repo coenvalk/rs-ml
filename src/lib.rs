@@ -2,11 +2,12 @@ use core::f64;
 use std::{
     collections::{HashMap, HashSet},
     hash::Hash,
-    process::Output,
 };
 
 use ndarray::{Array, Array1, Array2, Axis, Dimension};
 use num_traits::Float;
+
+pub mod transformer;
 
 #[derive(Debug)]
 struct NBdata {
@@ -20,16 +21,6 @@ pub struct GaussianNB<Label> {
     data: HashMap<Label, NBdata>,
 }
 
-pub struct MinMaxScaler<F> {
-    min_value: F,
-    max_value: F,
-}
-
-pub struct StandardScaler {
-    means: Array1<f64>,
-    std_devs: Array1<f64>,
-}
-
 pub fn train_test_split<D: Dimension, D2: Dimension<Larger = D>>(
     arr: &Array2<f64>,
     split: f64,
@@ -38,35 +29,6 @@ pub fn train_test_split<D: Dimension, D2: Dimension<Larger = D>>(
     let v = arr.rows();
 
     todo!()
-}
-
-trait Transformer<Input, Output> {
-    fn fit(input: &Input) -> Option<Self>
-    where
-        Self: Sized;
-
-    fn transform(&self, input: &Input) -> Option<Output>;
-
-    fn fit_transform(input: &Input) -> Option<Output>
-    where
-        Self: Sized,
-    {
-        let transformer = Self::fit(input)?;
-        transformer.transform(input)
-    }
-}
-
-impl Transformer<Array2<f64>, Array2<f64>> for StandardScaler {
-    fn fit(input: &Array2<f64>) -> Option<Self> {
-        Some(StandardScaler {
-            means: input.mean_axis(Axis(0))?,
-            std_devs: input.std_axis(Axis(0), (input.shape()[0] - 1) as f64),
-        })
-    }
-
-    fn transform(&self, arr: &Array2<f64>) -> Option<Array2<f64>> {
-        Some((arr - &self.means) / &self.std_devs)
-    }
 }
 
 impl<Label: Hash + Eq + Clone> GaussianNB<Label> {
@@ -115,135 +77,5 @@ impl<Label: Hash + Eq + Clone> GaussianNB<Label> {
         }
 
         likelihood
-    }
-}
-
-impl<A, F> Transformer<A, Vec<F>> for MinMaxScaler<F>
-where
-    A: AsRef<[F]>,
-    F: Float,
-{
-    fn fit(arr: &A) -> Option<Self>
-    where
-        A: AsRef<[F]>,
-    {
-        let max_value = arr
-            .as_ref()
-            .iter()
-            .fold(F::min_value(), |agg, curr| curr.max(agg));
-        let min_value = arr
-            .as_ref()
-            .iter()
-            .fold(F::max_value(), |agg, curr| curr.min(agg));
-
-        Some(MinMaxScaler::<F> {
-            min_value,
-            max_value,
-        })
-    }
-    fn transform(&self, arr: &A) -> Option<Vec<F>> {
-        Some(
-            arr.as_ref()
-                .iter()
-                .map(|elem| {
-                    elem.sub(self.min_value)
-                        .div(self.max_value - self.min_value)
-                })
-                .collect(),
-        )
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use ndarray::{arr2, Array};
-    use rand::{rng, seq::SliceRandom};
-    use serde::{Deserialize, Serialize};
-
-    use super::*;
-
-    #[derive(Deserialize, Serialize)]
-    struct DataPoint {
-        sepal_length: f64,
-        sepal_width: f64,
-        petal_length: f64,
-        petal_width: f64,
-        species: String,
-    }
-
-    #[test]
-    fn it_works() {
-        let arr = arr2(&[
-            [0., 1., 2.],
-            [9., 77., 3.],
-            [3., 2., 10.],
-            [2., 2., 90.],
-            [8., 24., 100.],
-        ]);
-
-        let labels = vec![true, false, true, false, false];
-        let model = GaussianNB::fit(&arr, &labels);
-
-        model.predict(&arr);
-    }
-
-    #[test]
-    fn standard_scaler() {
-        let arr = arr2(&[
-            [0., 1., 2.],
-            [9., 77., 3.],
-            [3., 2., 10.],
-            [2., 2., 90.],
-            [8., 24., 100.],
-        ]);
-
-        let scaler = StandardScaler::fit(&arr).unwrap();
-
-        let scaled = scaler.transform(&arr).unwrap();
-
-        println!("{}", scaled);
-
-        println!("means: {}", scaled.view().mean_axis(Axis(0)).unwrap());
-        println!("std: {}", scaled.view().std_axis(Axis(0), 4.));
-    }
-
-    #[test]
-    fn iris() {
-        let mut csv = csv::Reader::from_path("iris.csv").unwrap();
-
-        let mut a: Vec<DataPoint> = csv
-            .deserialize::<DataPoint>()
-            .filter_map(|r| r.ok())
-            .collect();
-
-        a.shuffle(&mut rng());
-
-        let mut iris = Array::zeros((a.len(), 4));
-
-        let mut labels = vec![];
-
-        for (idx, data) in a.iter().enumerate() {
-            iris[[idx, 0]] = data.sepal_length;
-            iris[[idx, 1]] = data.sepal_width;
-            iris[[idx, 2]] = data.petal_length;
-            iris[[idx, 3]] = data.petal_width;
-
-            labels.push(data.species.clone());
-        }
-
-        let scaled = StandardScaler::fit_transform(&iris).unwrap();
-
-        let model = GaussianNB::fit(&scaled, &labels);
-        let inference = model.predict(&scaled);
-
-        for i in 0..labels.len() {
-            println!("gt: {}", labels[i]);
-
-            for (label, row) in inference.iter() {
-                println!("likelihood of {}: {:.4}", label, row[i]);
-            }
-
-            println!();
-        }
     }
 }

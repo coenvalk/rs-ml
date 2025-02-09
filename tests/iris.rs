@@ -1,8 +1,9 @@
 use ndarray::Array;
 use rand::{rng, seq::SliceRandom};
+use rs_ml::classification::naive_bayes::GaussianNB;
+use rs_ml::classification::Classifier;
 use rs_ml::transformer::scalers::StandardScaler;
 use rs_ml::transformer::Transformer;
-use rs_ml::GaussianNB;
 use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize)]

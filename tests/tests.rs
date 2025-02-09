@@ -1,8 +1,9 @@
-use ndarray::Axis;
 use ndarray::arr2;
+use ndarray::Axis;
+use rs_ml::classification::naive_bayes::GaussianNB;
+use rs_ml::classification::Classifier;
 use rs_ml::transformer::scalers::StandardScaler;
 use rs_ml::transformer::Transformer;
-use rs_ml::GaussianNB;
 
 #[test]
 fn it_works() {

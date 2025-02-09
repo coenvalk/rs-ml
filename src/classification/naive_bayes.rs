@@ -20,8 +20,8 @@ pub struct GaussianNB<Label> {
     data: HashMap<Label, NBdata>,
 }
 
-impl<Label: Hash + Eq + Clone> Classifier<Label> for GaussianNB<Label> {
-    fn fit(arr: &Array2<f64>, y: &[Label]) -> Self {
+impl<Label: Hash + Eq + Clone> Classifier<Array2<f64>, Label> for GaussianNB<Label> {
+    fn fit(arr: &Array2<f64>, y: &[Label]) -> Option<GaussianNB<Label>> {
         let labels: HashSet<_> = y.iter().collect();
         let mut data = HashMap::new();
 
@@ -44,17 +44,17 @@ impl<Label: Hash + Eq + Clone> Classifier<Label> for GaussianNB<Label> {
             data.insert(
                 label.clone(),
                 NBdata {
-                    mean: filtered_view.mean_axis(Axis(0)).unwrap(),
+                    mean: filtered_view.mean_axis(Axis(0))?,
                     std_dev: filtered_view.std_axis(Axis(0), (c - 1) as f64),
                     posterior: c as f64 / nrows as f64,
                 },
             );
         }
 
-        GaussianNB { data }
+        Some(GaussianNB { data })
     }
 
-    fn predict(&self, arr: &Array2<f64>) -> HashMap<Label, Array1<f64>> {
+    fn predict(&self, arr: &Array2<f64>) -> Option<std::collections::HashMap<Label, Vec<f64>>> {
         let mut likelihood = HashMap::new();
         let root_2pi = f64::sqrt(2. * f64::consts::PI);
         for (label, data) in self.data.iter() {
@@ -62,9 +62,10 @@ impl<Label: Hash + Eq + Clone> Classifier<Label> for GaussianNB<Label> {
             let p2 = (&data.std_dev * root_2pi).recip();
 
             let p = (p2 * p1.exp()).product_axis(Axis(1)) * data.posterior;
-            likelihood.insert(label.clone(), p);
+
+            likelihood.insert(label.clone(), p.to_vec());
         }
 
-        likelihood
+        Some(likelihood)
     }
 }

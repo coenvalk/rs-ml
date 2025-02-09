@@ -41,8 +41,8 @@ fn iris() {
 
     let scaled = StandardScaler::fit_transform(&iris).unwrap();
 
-    let model = GaussianNB::fit(&scaled, &labels);
-    let inference = model.predict(&scaled);
+    let model = GaussianNB::fit(&scaled, &labels).unwrap();
+    let inference = model.predict(&scaled).unwrap();
 
     for i in 0..labels.len() {
         println!("gt: {}", labels[i]);

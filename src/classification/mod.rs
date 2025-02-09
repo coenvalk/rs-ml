@@ -3,7 +3,10 @@ use std::{collections::HashMap, hash::Hash};
 
 pub mod naive_bayes;
 
-pub trait Classifier<Label: Hash + Eq + Clone> {
-    fn fit(arr: &Array2<f64>, y: &[Label]) -> Self;
-    fn predict(&self, arr: &Array2<f64>) -> HashMap<Label, Array1<f64>>;
+pub trait Classifier<Features, Label: Hash + Eq + Clone>
+where
+    Self: Sized,
+{
+    fn fit(arr: &Features, y: &[Label]) -> Option<Self>;
+    fn predict(&self, arr: &Features) -> Option<HashMap<Label, Vec<f64>>>;
 }

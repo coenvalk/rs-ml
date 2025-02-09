@@ -1,10 +1,8 @@
 use ndarray::Axis;
-use ndarray::{arr2, Array};
-use rand::{rng, seq::SliceRandom};
+use ndarray::arr2;
 use rs_ml::transformer::scalers::StandardScaler;
 use rs_ml::transformer::Transformer;
 use rs_ml::GaussianNB;
-use serde::{Deserialize, Serialize};
 
 #[test]
 fn it_works() {

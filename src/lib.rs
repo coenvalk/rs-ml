@@ -1,3 +1,7 @@
+//! rs-ml is a simple ML framework for the Rust language. it includes train test splitting,
+//! scalers, and a guassian naive bayes model. It also includes traits to add more transfomers and
+//! models to the framework.
+
 use core::f64;
 
 use classification::Classifier;

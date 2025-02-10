@@ -1,8 +1,6 @@
-use crate::Array2;
-use crate::Axis;
-use crate::Classifier;
+use crate::{Axis, Classifier};
 use core::f64;
-use ndarray::Array1;
+use ndarray::{Array1, Array2};
 
 #[derive(Debug)]
 pub struct GaussianNB<Label> {

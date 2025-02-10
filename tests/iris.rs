@@ -1,9 +1,9 @@
-use ndarray::Array;
+use ndarray::{Array, Array1};
 use rand::{rng, seq::SliceRandom};
-use rs_ml::classification::naive_bayes::GaussianNB;
 use rs_ml::classification::Classifier;
 use rs_ml::transformer::scalers::StandardScaler;
 use rs_ml::transformer::Transformer;
+use rs_ml::{classification::naive_bayes::GaussianNB, train_test_split};
 use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize)]
@@ -39,12 +39,19 @@ fn iris() {
         labels.push(data.species.clone());
     }
 
-    let scaled = StandardScaler::fit_transform(&iris).unwrap();
+    let (train_feat, test_feat, train_label, test_labels) =
+        train_test_split(&iris, &Array1::from_vec(labels), 0.25);
 
-    let model = GaussianNB::fit(&scaled, &labels).unwrap();
-    let inference = model.predict(&scaled).unwrap();
+    println!("train: {}, test: {}", train_label.len(), test_labels.len());
 
-    for (gt, guess) in labels.iter().zip(inference) {
+    let scaler = StandardScaler::fit(&train_feat).unwrap();
+    let scaled_train = scaler.transform(&train_feat).unwrap();
+    let scaled_test = scaler.transform(&test_feat).unwrap();
+    let model = GaussianNB::fit(&scaled_train, &train_label.to_vec()).unwrap();
+
+    let inference = model.predict(&scaled_test).unwrap();
+
+    for (gt, guess) in test_labels.iter().zip(inference) {
         println!("gt: {}, guess: {}", gt, guess);
     }
 }

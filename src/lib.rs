@@ -1,17 +1,35 @@
 use core::f64;
-use std::hash::Hash;
 
 use classification::Classifier;
-use ndarray::{Array, Array2, Axis, Dimension};
+use ndarray::{Array, Axis, Dimension, RemoveAxis};
+use rand::{rng, Rng};
 
 pub mod classification;
 pub mod transformer;
-pub fn train_test_split<D: Dimension, D2: Dimension<Larger = D>>(
-    arr: &Array2<f64>,
-    split: f64,
-) -> (&Array<f64, D>, &Array<f64, D>) {
-    let nrows = arr.shape()[0];
-    let v = arr.rows();
 
-    todo!()
+pub fn train_test_split<
+    D: Dimension + RemoveAxis,
+    D2: Dimension + RemoveAxis,
+    Feature: Clone,
+    Label: Clone,
+>(
+    arr: &Array<Feature, D>,
+    y: &Array<Label, D2>,
+    split: f64,
+) -> (
+    Array<Feature, D>,
+    Array<Feature, D>,
+    Array<Label, D2>,
+    Array<Label, D2>,
+) {
+    let rows = arr.shape()[0];
+
+    let (test, train): (Vec<usize>, Vec<usize>) = (0..rows).partition(|_| rng().random_bool(split));
+
+    (
+        arr.select(Axis(0), &train),
+        arr.select(Axis(0), &test),
+        y.select(Axis(0), &train),
+        y.select(Axis(0), &test),
+    )
 }

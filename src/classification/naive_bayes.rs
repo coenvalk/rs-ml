@@ -1,10 +1,7 @@
 use crate::Array2;
 use crate::Axis;
 use crate::Classifier;
-use crate::Hash;
 use core::f64;
-use std::collections::HashSet;
-
 use ndarray::Array1;
 
 #[derive(Debug)]
@@ -15,10 +12,16 @@ pub struct GaussianNB<Label> {
     labels: Vec<Label>,
 }
 
-impl<Label: Hash + Eq + Clone> Classifier<Array2<f64>, Label> for GaussianNB<Label> {
+impl<Label: Eq + Clone> Classifier<Array2<f64>, Label> for GaussianNB<Label> {
     fn fit(arr: &Array2<f64>, y: &[Label]) -> Option<GaussianNB<Label>> {
-        let distinct_labels: HashSet<Label> = y.iter().cloned().collect();
-        let labels: Vec<Label> = distinct_labels.into_iter().collect();
+        let labels: Vec<Label> = y.iter().fold(vec![], |mut agg, curr| {
+            if agg.contains(curr) {
+                agg
+            } else {
+                agg.push(curr.clone());
+                agg
+            }
+        });
 
         let nrows = arr.nrows();
 

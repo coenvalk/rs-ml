@@ -1,10 +1,8 @@
-use std::hash::Hash;
-
 use ndarray::Array2;
 
 pub mod naive_bayes;
 
-pub trait Classifier<Features, Label: Hash + Eq + Clone>
+pub trait Classifier<Features, Label: Eq + Clone>
 where
     Self: Sized,
 {

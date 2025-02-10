@@ -44,13 +44,7 @@ fn iris() {
     let model = GaussianNB::fit(&scaled, &labels).unwrap();
     let inference = model.predict(&scaled).unwrap();
 
-    for i in 0..labels.len() {
-        println!("gt: {}", labels[i]);
-
-        for (label, row) in inference.iter() {
-            println!("likelihood of {}: {:.4}", label, row[i]);
-        }
-
-        println!();
+    for (gt, guess) in labels.iter().zip(inference) {
+        println!("gt: {}, guess: {}", gt, guess);
     }
 }

@@ -3,31 +3,30 @@ use crate::Axis;
 use crate::Classifier;
 use crate::Hash;
 use core::f64;
-use std::collections::HashMap;
 use std::collections::HashSet;
 
 use ndarray::Array1;
 
 #[derive(Debug)]
-struct NBdata {
-    mean: Array1<f64>,
-    std_dev: Array1<f64>,
-    posterior: f64,
-}
-
-#[derive(Debug)]
 pub struct GaussianNB<Label> {
-    data: HashMap<Label, NBdata>,
+    means: Array2<f64>,
+    std_devs: Array2<f64>,
+    posteriors: Array1<f64>,
+    labels: Vec<Label>,
 }
 
 impl<Label: Hash + Eq + Clone> Classifier<Array2<f64>, Label> for GaussianNB<Label> {
     fn fit(arr: &Array2<f64>, y: &[Label]) -> Option<GaussianNB<Label>> {
-        let labels: HashSet<_> = y.iter().collect();
-        let mut data = HashMap::new();
+        let distinct_labels: HashSet<Label> = y.iter().cloned().collect();
+        let labels: Vec<Label> = distinct_labels.into_iter().collect();
 
         let nrows = arr.nrows();
 
-        for label in labels {
+        let mut means = Array2::zeros((labels.len(), arr.ncols()));
+        let mut std_devs = Array2::zeros((labels.len(), arr.ncols()));
+        let mut posteriors = Array1::zeros(labels.len());
+
+        for (idx, label) in labels.iter().enumerate() {
             let indeces: Vec<usize> = y
                 .iter()
                 .enumerate()
@@ -38,34 +37,40 @@ impl<Label: Hash + Eq + Clone> Classifier<Array2<f64>, Label> for GaussianNB<Lab
                 .collect();
 
             let filtered_view = arr.select(Axis(0), &indeces);
-
             let c = filtered_view.nrows();
 
-            data.insert(
-                label.clone(),
-                NBdata {
-                    mean: filtered_view.mean_axis(Axis(0))?,
-                    std_dev: filtered_view.std_axis(Axis(0), (c - 1) as f64),
-                    posterior: c as f64 / nrows as f64,
-                },
-            );
+            means
+                .row_mut(idx)
+                .assign(&filtered_view.mean_axis(Axis(0))?);
+            std_devs
+                .row_mut(idx)
+                .assign(&filtered_view.std_axis(Axis(0), (c - 1) as f64));
+            posteriors[idx] = c as f64 / nrows as f64;
         }
 
-        Some(GaussianNB { data })
+        Some(GaussianNB {
+            labels,
+            means,
+            std_devs,
+            posteriors,
+        })
     }
 
-    fn predict(&self, arr: &Array2<f64>) -> Option<std::collections::HashMap<Label, Vec<f64>>> {
-        let mut likelihood = HashMap::new();
+    fn labels(&self) -> &[Label] {
+        &self.labels
+    }
+
+    fn predict_proba(&self, arr: &Array2<f64>) -> Option<Array2<f64>> {
         let root_2pi = f64::sqrt(2. * f64::consts::PI);
-        for (label, data) in self.data.iter() {
-            let p1 = -(arr - &data.mean).pow2() / (2. * &data.std_dev.pow2());
-            let p2 = (&data.std_dev * root_2pi).recip();
+        let broadcasted_means = self.means.view().insert_axis(Axis(1));
+        let broadcasted_stddev = self.std_devs.view().insert_axis(Axis(1));
+        let broadcasted_posteriors = self.posteriors.view().insert_axis(Axis(1));
 
-            let p = (p2 * p1.exp()).product_axis(Axis(1)) * data.posterior;
+        let p1 = -(arr - &broadcasted_means).pow2() / (2. * broadcasted_stddev.pow2());
+        let p2 = (&broadcasted_stddev * root_2pi).recip();
 
-            likelihood.insert(label.clone(), p.to_vec());
-        }
+        let p = (p2 * p1.exp()).product_axis(Axis(2)) * broadcasted_posteriors;
 
-        Some(likelihood)
+        Some(p.t().to_owned())
     }
 }

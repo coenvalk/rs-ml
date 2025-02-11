@@ -1,4 +1,4 @@
-# [rs-ml](docs.rs/rs-ml/latest/rs_ml)
+# [rs-ml](https://docs.rs/rs-ml/latest/rs_ml)
 
 ![Crates.io Downloads (recent)](https://img.shields.io/crates/dr/rs-ml)
 

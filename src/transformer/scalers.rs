@@ -1,13 +1,17 @@
+//! Scalers to limit, normalize range
+
 use ndarray::{Array1, Array2, Axis};
 use num_traits::Float;
 
 use super::Transformer;
 
+/// Transforms input data to 0 mean, unit variance.
 pub struct StandardScaler {
     means: Array1<f64>,
     std_devs: Array1<f64>,
 }
 
+/// Scales range of input data to between 0 and 1 linearly.
 pub struct MinMaxScaler<F> {
     min_value: F,
     max_value: F,

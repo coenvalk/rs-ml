@@ -1,7 +1,10 @@
+//! Naive Bayes classifiers
+
 use crate::{Axis, Classifier};
 use core::f64;
 use ndarray::{Array1, Array2};
 
+/// Gaussian Naive Bayes Classifier
 #[derive(Debug)]
 pub struct GaussianNB<Label> {
     means: Array2<f64>,

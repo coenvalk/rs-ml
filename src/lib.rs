@@ -10,6 +10,7 @@ use ndarray::{Array, Axis, Dimension, RemoveAxis};
 use rand::{rng, Rng};
 
 pub mod classification;
+pub mod metrics;
 pub mod transformer;
 
 /// Split data and features into training and testing set. `test_size` must be between 0 and 1.

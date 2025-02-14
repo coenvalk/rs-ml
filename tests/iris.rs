@@ -47,7 +47,7 @@ fn iris() {
     let scaler = StandardScaler::fit(&train_feat).unwrap();
     let scaled_train = scaler.transform(&train_feat).unwrap();
     let scaled_test = scaler.transform(&test_feat).unwrap();
-    let model = GaussianNB::fit(&scaled_train, &train_label.to_vec()).unwrap();
+    let model = GaussianNB::fit(&scaled_train, train_label.to_vec()).unwrap();
 
     let inference = model.predict(&scaled_test).unwrap();
 

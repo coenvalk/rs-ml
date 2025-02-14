@@ -16,7 +16,7 @@ fn it_works() {
     ]);
 
     let labels = vec![true, false, true, false, false];
-    let model = GaussianNB::fit(&arr, &labels).unwrap();
+    let model = GaussianNB::fit(&arr, labels).unwrap();
 
     model.predict(&arr);
 }

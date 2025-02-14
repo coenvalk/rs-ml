@@ -14,8 +14,11 @@ pub struct GaussianNB<Label> {
 }
 
 impl<Label: Eq + Clone> Classifier<Array2<f64>, Label> for GaussianNB<Label> {
-    fn fit(arr: &Array2<f64>, y: &[Label]) -> Option<GaussianNB<Label>> {
-        let labels: Vec<Label> = y.iter().fold(vec![], |mut agg, curr| {
+    fn fit<I>(arr: &Array2<f64>, y: I) -> Option<GaussianNB<Label>>
+    where
+        for<'a> &'a I: IntoIterator<Item = &'a Label>,
+    {
+        let labels: Vec<Label> = y.into_iter().fold(vec![], |mut agg, curr| {
             if agg.contains(curr) {
                 agg
             } else {
@@ -32,7 +35,7 @@ impl<Label: Eq + Clone> Classifier<Array2<f64>, Label> for GaussianNB<Label> {
 
         for (idx, label) in labels.iter().enumerate() {
             let indeces: Vec<usize> = y
-                .iter()
+                .into_iter()
                 .enumerate()
                 .filter_map(|(idx, l)| match l == label {
                     true => Some(idx),

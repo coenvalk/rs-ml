@@ -10,7 +10,9 @@ where
     Self: Sized,
 {
     /// Fit data based on given input features and labels.
-    fn fit(arr: &Features, y: &[Label]) -> Option<Self>;
+    fn fit<I>(arr: &Features, y: I) -> Option<Self>
+    where
+        for<'a> &'a I: IntoIterator<Item = &'a Label>;
 
     /// Labels on which the model is fitted.
     fn labels(&self) -> &[Label];

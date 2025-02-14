@@ -8,8 +8,10 @@ readme = "README.md"
 repository = "https://github.com/coenvalk/rs-ml"
 
 [dependencies]
-csv = "1.3.1"
 ndarray = "0.16.1"
 num-traits = "0.2.19"
 rand = "0.9.0"
+
+[dev-dependencies]
+csv = "1.3.1"
 serde = { version = "1.0.217", features = ["derive"] }

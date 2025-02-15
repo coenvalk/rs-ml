@@ -3,13 +3,14 @@
 use crate::{Axis, Classifier};
 use core::f64;
 use ndarray::{Array1, Array2};
+use std::f64::consts::PI;
 
 /// Gaussian Naive Bayes Classifier
 #[derive(Debug)]
 pub struct GaussianNB<Label> {
     means: Array2<f64>,
-    std_devs: Array2<f64>,
-    posteriors: Array1<f64>,
+    vars: Array2<f64>,
+    priors: Array1<f64>,
     labels: Vec<Label>,
 }
 
@@ -27,11 +28,12 @@ impl<Label: Eq + Clone> Classifier<Array2<f64>, Label> for GaussianNB<Label> {
             }
         });
 
+        let features = arr.ncols();
         let nrows = arr.nrows();
 
-        let mut means = Array2::zeros((labels.len(), arr.ncols()));
-        let mut std_devs = Array2::zeros((labels.len(), arr.ncols()));
-        let mut posteriors = Array1::zeros(labels.len());
+        let mut means = Array2::zeros((labels.len(), features));
+        let mut vars = Array2::zeros((labels.len(), features));
+        let mut priors = Array1::zeros(labels.len());
 
         for (idx, label) in labels.iter().enumerate() {
             let indeces: Vec<usize> = y
@@ -49,17 +51,16 @@ impl<Label: Eq + Clone> Classifier<Array2<f64>, Label> for GaussianNB<Label> {
             means
                 .row_mut(idx)
                 .assign(&filtered_view.mean_axis(Axis(0))?);
-            std_devs
-                .row_mut(idx)
-                .assign(&filtered_view.std_axis(Axis(0), (c - 1) as f64));
-            posteriors[idx] = c as f64 / nrows as f64;
+            vars.row_mut(idx)
+                .assign(&filtered_view.var_axis(Axis(0), 1.0));
+            priors[idx] = c as f64 / nrows as f64;
         }
 
         Some(GaussianNB {
             labels,
             means,
-            std_devs,
-            posteriors,
+            vars,
+            priors,
         })
     }
 
@@ -68,16 +69,15 @@ impl<Label: Eq + Clone> Classifier<Array2<f64>, Label> for GaussianNB<Label> {
     }
 
     fn predict_proba(&self, arr: &Array2<f64>) -> Option<Array2<f64>> {
-        let root_2pi = f64::sqrt(2. * f64::consts::PI);
         let broadcasted_means = self.means.view().insert_axis(Axis(1));
-        let broadcasted_stddev = self.std_devs.view().insert_axis(Axis(1));
-        let broadcasted_posteriors = self.posteriors.view().insert_axis(Axis(1));
+        let broadcasted_vars = self.vars.view().insert_axis(Axis(1));
+        let broadcasted_log_priors = self.priors.view().insert_axis(Axis(1)).ln();
 
-        let p1 = -(arr - &broadcasted_means).pow2() / (2. * broadcasted_stddev.pow2());
-        let p2 = (&broadcasted_stddev * root_2pi).recip();
+        let mut log_likelihood = -0.5 * (&broadcasted_vars * 2.0 * PI).ln().sum_axis(Axis(2));
+        log_likelihood = log_likelihood
+            - 0.5 * ((arr - &broadcasted_means).pow2() / broadcasted_vars).sum_axis(Axis(2))
+            + broadcasted_log_priors;
 
-        let p = (p2 * p1.exp()).product_axis(Axis(2)) * broadcasted_posteriors;
-
-        Some(p.t().to_owned())
+        Some(log_likelihood.exp().t().to_owned())
     }
 }

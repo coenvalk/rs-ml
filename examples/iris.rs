@@ -2,9 +2,12 @@ use ndarray::{Array, Array1};
 use rand::{rng, seq::SliceRandom};
 use rs_ml::classification::Classifier;
 use rs_ml::metrics::accuracy;
-use rs_ml::transformer::scalers::StandardScaler;
+use rs_ml::train_test_split;
 use rs_ml::transformer::Transformer;
-use rs_ml::{classification::naive_bayes::GaussianNB, train_test_split};
+use rs_ml::Estimator;
+use rs_ml::{
+    classification::naive_bayes::GaussianNBEstimator, transformer::scalers::StandardScalerParams,
+};
 use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize)]
@@ -42,10 +45,12 @@ fn main() {
     let (train_features, test_features, train_label, test_labels) =
         train_test_split(&iris, &Array1::from_vec(labels), 0.25);
 
-    let scaler = StandardScaler::fit(&train_features).unwrap();
+    let scaler = StandardScalerParams.fit(&train_features).unwrap();
     let scaled_train = scaler.transform(&train_features).unwrap();
     let scaled_test = scaler.transform(&test_features).unwrap();
-    let model = GaussianNB::fit(&scaled_train, train_label.to_vec()).unwrap();
+    let model = GaussianNBEstimator
+        .fit(&(&scaled_train, train_label.to_vec()))
+        .unwrap();
 
     let inference = model.predict(&scaled_test).unwrap();
 

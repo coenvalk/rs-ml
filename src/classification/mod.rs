@@ -4,16 +4,12 @@ use ndarray::Array2;
 
 pub mod naive_bayes;
 
-/// Trait to make a classification model.
-pub trait Classifier<Features, Label: Eq + Clone>
+/// Trait to define the
+pub trait Classifier<Features, Label>
 where
     Self: Sized,
+    Label: Clone,
 {
-    /// Fit data based on given input features and labels.
-    fn fit<I>(arr: &Features, y: I) -> Option<Self>
-    where
-        for<'a> &'a I: IntoIterator<Item = &'a Label>;
-
     /// Labels on which the model is fitted.
     fn labels(&self) -> &[Label];
 

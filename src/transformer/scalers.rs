@@ -2,8 +2,20 @@
 
 use ndarray::{Array1, Array2, Axis};
 use num_traits::Float;
+use std::marker::PhantomData;
+
+use crate::Estimator;
 
 use super::Transformer;
+
+/// Params needed to fit a standard scaler with 0 mean, unit variance
+pub struct StandardScalerParams;
+
+/// Params required to fit a min max scaler
+#[derive(Default)]
+pub struct MinMaxScalerParams<F> {
+    _data: PhantomData<F>,
+}
 
 /// Transforms input data to 0 mean, unit variance.
 pub struct StandardScaler {
@@ -17,20 +29,26 @@ pub struct MinMaxScaler<F> {
     max_value: F,
 }
 
-impl<A, F> Transformer<A, Vec<F>> for MinMaxScaler<F>
+impl<F: Default> MinMaxScalerParams<F> {
+    /// Create new instance of MinMaxScaler
+    pub fn new() -> Self {
+        MinMaxScalerParams::default()
+    }
+}
+
+impl<A, F> Estimator<A> for MinMaxScalerParams<F>
 where
     A: AsRef<[F]>,
     F: Float,
 {
-    fn fit(arr: &A) -> Option<Self>
-    where
-        A: AsRef<[F]>,
-    {
-        let max_value = arr
+    type Estimator = MinMaxScaler<F>;
+
+    fn fit(&self, input: &A) -> Option<Self::Estimator> {
+        let max_value = input
             .as_ref()
             .iter()
             .fold(F::min_value(), |agg, curr| curr.max(agg));
-        let min_value = arr
+        let min_value = input
             .as_ref()
             .iter()
             .fold(F::max_value(), |agg, curr| curr.min(agg));
@@ -40,6 +58,13 @@ where
             max_value,
         })
     }
+}
+
+impl<A, F> Transformer<A, Vec<F>> for MinMaxScaler<F>
+where
+    A: AsRef<[F]>,
+    F: Float,
+{
     fn transform(&self, arr: &A) -> Option<Vec<F>> {
         Some(
             arr.as_ref()
@@ -53,14 +78,18 @@ where
     }
 }
 
-impl Transformer<Array2<f64>, Array2<f64>> for StandardScaler {
-    fn fit(input: &Array2<f64>) -> Option<Self> {
+impl Estimator<Array2<f64>> for StandardScalerParams {
+    type Estimator = StandardScaler;
+
+    fn fit(&self, input: &Array2<f64>) -> Option<StandardScaler> {
         Some(StandardScaler {
             means: input.mean_axis(Axis(0))?,
             std_devs: input.std_axis(Axis(0), (input.shape()[0] - 1) as f64),
         })
     }
+}
 
+impl Transformer<Array2<f64>, Array2<f64>> for StandardScaler {
     fn transform(&self, arr: &Array2<f64>) -> Option<Array2<f64>> {
         Some((arr - &self.means) / &self.std_devs)
     }

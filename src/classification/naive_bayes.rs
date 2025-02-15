@@ -7,7 +7,7 @@ use std::f64::consts::PI;
 
 use super::Classifier;
 
-/// Estimator for gaussian naive bayes classifier. used to train a gaussian naive bayes classifier
+/// Estimator to train a [`GaussianNB`] classifier.
 ///
 /// Example:
 /// ```

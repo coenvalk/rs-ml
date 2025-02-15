@@ -6,7 +6,7 @@ use std::marker::PhantomData;
 
 use crate::Estimator;
 
-use super::{FitTransform, Transformer};
+use super::Transformer;
 
 /// Params needed to fit a standard scaler with 0 mean, unit variance
 pub struct StandardScalerParams;

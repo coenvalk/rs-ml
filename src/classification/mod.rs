@@ -4,10 +4,9 @@ use ndarray::Array2;
 
 pub mod naive_bayes;
 
-/// Trait to define the
+/// Trait to make a classification model.
 pub trait Classifier<Features, Label>
 where
-    Self: Sized,
     Label: Clone,
 {
     /// Labels on which the model is fitted.

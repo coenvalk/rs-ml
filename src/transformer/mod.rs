@@ -14,7 +14,8 @@ pub trait Transformer<Input, Output> {
 pub trait FitTransform<Input, Output, T: Transformer<Input, Output>>:
     Estimator<Input, Estimator = T>
 {
-    /// Fit and transform in one operation
+    /// Fit and transform data in one operation. Useful if you don't need to use the fitted transformer
+    /// multiple times.
     fn fit_transform(&self, input: &Input) -> Option<Output> {
         let transfomer = self.fit(input)?;
         transfomer.transform(input)

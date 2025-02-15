@@ -9,21 +9,24 @@ use crate::Estimator;
 use super::Transformer;
 
 /// Params needed to fit a standard scaler with 0 mean, unit variance
+#[derive(Debug, Clone, Copy)]
 pub struct StandardScalerParams;
 
-/// Params required to fit a min max scaler
-#[derive(Default)]
+/// Params required to fit a min max scaler.
+#[derive(Default, Debug, Clone, Copy)]
 pub struct MinMaxScalerParams<F> {
     _data: PhantomData<F>,
 }
 
 /// Transforms input data to 0 mean, unit variance.
+#[derive(Debug, Clone)]
 pub struct StandardScaler {
     means: Array1<f64>,
     std_devs: Array1<f64>,
 }
 
 /// Scales range of input data to between 0 and 1 linearly.
+#[derive(Debug, Clone)]
 pub struct MinMaxScaler<F> {
     min_value: F,
     max_value: F,

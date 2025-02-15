@@ -52,8 +52,13 @@ fn main() {
         .fit(&(&scaled_train, train_label.to_vec()))
         .unwrap();
 
+    let class_likelihoods = model.predict_proba(&scaled_test).unwrap();
     let inference = model.predict(&scaled_test).unwrap();
 
+    println!("likelihood of");
+    println!("{:#?}", model.labels());
+    println!("{:.4}", class_likelihoods);
+
     let accuracy = accuracy(test_labels, inference).unwrap();
-    println!("{:.4}", accuracy);
+    println!("Accuracy: {:.4}", accuracy);
 }

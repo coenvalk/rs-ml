@@ -7,10 +7,29 @@ use std::f64::consts::PI;
 
 use super::Classifier;
 
-/// Estimator for gaussian NB
+/// Estimator for gaussian naive bayes classifier. used to train a gaussian naive bayes classifier
+///
+/// Example:
+/// ```
+/// use ndarray::{arr1, arr2};
+/// use crate::rs_ml::Estimator;
+/// use rs_ml::classification::naive_bayes::GaussianNBEstimator;
+///
+/// let features = arr2(&[
+///     [0., 0.],
+///     [0., 1.],
+///     [1., 0.],
+///     [1., 1.]
+/// ]);
+///
+/// let labels = arr1(&[false, true, true, false]);
+///
+/// let naive_bayes_model = GaussianNBEstimator.fit(&(&features, labels)).unwrap();
+/// ```
+#[derive(Debug, Clone, Copy)]
 pub struct GaussianNBEstimator;
 
-/// Gaussian Naive Bayes Classifier
+/// Represents a fitted Gaussian Naive Bayes Classifier.
 #[derive(Debug)]
 pub struct GaussianNB<Label> {
     means: Array2<f64>,
@@ -84,11 +103,14 @@ impl<Label: Clone> Classifier<Array2<f64>, Label> for GaussianNB<Label> {
         let broadcasted_vars = self.vars.view().insert_axis(Axis(1));
         let broadcasted_log_priors = self.priors.view().insert_axis(Axis(1)).ln();
 
-        let mut log_likelihood = -0.5 * (&broadcasted_vars * 2.0 * PI).ln().sum_axis(Axis(2));
-        log_likelihood = log_likelihood
+        let log_likelihood = -0.5 * (&broadcasted_vars * 2.0 * PI).ln().sum_axis(Axis(2))
             - 0.5 * ((arr - &broadcasted_means).pow2() / broadcasted_vars).sum_axis(Axis(2))
             + broadcasted_log_priors;
 
-        Some(log_likelihood.exp().t().to_owned())
+        let likelihood = log_likelihood.exp().t().to_owned();
+
+        let likelihood = &likelihood / &likelihood.sum_axis(Axis(1)).insert_axis(Axis(1));
+
+        Some(likelihood)
     }
 }

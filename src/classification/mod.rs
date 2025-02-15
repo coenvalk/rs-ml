@@ -1,10 +1,10 @@
-//! Commonly used classification models and trait to implement more.
+//! Commonly used classification models.
 
 use ndarray::Array2;
 
 pub mod naive_bayes;
 
-/// Trait to make a classification model.
+/// Trait to interface with a fitted classification model
 pub trait Classifier<Features, Label>
 where
     Label: Clone,

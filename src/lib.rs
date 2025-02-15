@@ -1,7 +1,13 @@
 //! rs-ml is a simple ML framework for the Rust language. it includes train test splitting,
 //! scalers, and a guassian naive bayes model. It also includes traits to add more transfomers and
 //! models to the framework.
-#![deny(missing_docs)]
+#![deny(
+    missing_docs,
+    unsafe_code,
+    missing_debug_implementations,
+    missing_copy_implementations,
+    clippy::missing_panics_doc
+)]
 
 use core::f64;
 
@@ -55,7 +61,27 @@ pub trait Estimator<Input> {
 }
 
 /// Split data and features into training and testing set. `test_size` must be between 0 and 1.
-/// Panics if `test_size` is outside 0 and 1.
+///
+/// # Panics
+///
+/// Panics if `test_size` is outside range 0..=1.
+///
+/// Example:
+/// ```
+/// use rs_ml::train_test_split;
+/// use ndarray::{arr1, arr2};
+///
+/// let features = arr2(&[
+///   [1., 0.],
+///   [0., 1.],
+///   [0., 0.],
+///   [1., 1.]]);
+///
+/// let labels = arr1(&[1, 1, 0, 0]);
+///
+/// let (train_features, test_features, train_labels, test_labels) = train_test_split(&features,
+/// &labels, 0.25);
+/// ```
 pub fn train_test_split<
     D: Dimension + RemoveAxis,
     D2: Dimension + RemoveAxis,

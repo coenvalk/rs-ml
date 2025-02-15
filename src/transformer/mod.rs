@@ -20,3 +20,8 @@ pub trait FitTransform<Input, Output, T: Transformer<Input, Output>>:
         transfomer.transform(input)
     }
 }
+
+impl<Input, Output, T: Transformer<Input, Output>, E: Estimator<Input, Estimator = T>>
+    FitTransform<Input, Output, T> for E
+{
+}

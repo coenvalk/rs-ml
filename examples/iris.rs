@@ -39,12 +39,12 @@ fn main() {
         labels.push(data.species.clone());
     }
 
-    let (train_feat, test_feat, train_label, test_labels) =
+    let (train_features, test_features, train_label, test_labels) =
         train_test_split(&iris, &Array1::from_vec(labels), 0.25);
 
-    let scaler = StandardScaler::fit(&train_feat).unwrap();
-    let scaled_train = scaler.transform(&train_feat).unwrap();
-    let scaled_test = scaler.transform(&test_feat).unwrap();
+    let scaler = StandardScaler::fit(&train_features).unwrap();
+    let scaled_train = scaler.transform(&train_features).unwrap();
+    let scaled_test = scaler.transform(&test_features).unwrap();
     let model = GaussianNB::fit(&scaled_train, train_label.to_vec()).unwrap();
 
     let inference = model.predict(&scaled_test).unwrap();

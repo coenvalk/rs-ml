@@ -1,9 +1,14 @@
 //! Naive Bayes classifiers
 
-use crate::{Axis, Classifier};
+use crate::{Axis, Estimator};
 use core::f64;
 use ndarray::{Array1, Array2};
 use std::f64::consts::PI;
+
+use super::Classifier;
+
+/// Estimator for gaussian NB
+pub struct GaussianNBEstimator;
 
 /// Gaussian Naive Bayes Classifier
 #[derive(Debug)]
@@ -14,12 +19,16 @@ pub struct GaussianNB<Label> {
     labels: Vec<Label>,
 }
 
-impl<Label: Eq + Clone> Classifier<Array2<f64>, Label> for GaussianNB<Label> {
-    fn fit<I>(arr: &Array2<f64>, y: I) -> Option<GaussianNB<Label>>
-    where
-        for<'a> &'a I: IntoIterator<Item = &'a Label>,
-    {
-        let labels: Vec<Label> = y.into_iter().fold(vec![], |mut agg, curr| {
+impl<I, Label: Eq + Clone> Estimator<(&Array2<f64>, I)> for GaussianNBEstimator
+where
+    for<'a> &'a I: IntoIterator<Item = &'a Label>,
+{
+    type Estimator = GaussianNB<Label>;
+
+    fn fit(&self, input: &(&Array2<f64>, I)) -> Option<Self::Estimator> {
+        let (features, labels) = input;
+
+        let distinct_labels: Vec<_> = labels.into_iter().fold(vec![], |mut agg, curr| {
             if agg.contains(curr) {
                 agg
             } else {
@@ -28,15 +37,15 @@ impl<Label: Eq + Clone> Classifier<Array2<f64>, Label> for GaussianNB<Label> {
             }
         });
 
-        let features = arr.ncols();
-        let nrows = arr.nrows();
+        let nfeatures = features.ncols();
+        let nrows = features.nrows();
 
-        let mut means = Array2::zeros((labels.len(), features));
-        let mut vars = Array2::zeros((labels.len(), features));
-        let mut priors = Array1::zeros(labels.len());
+        let mut means = Array2::zeros((distinct_labels.len(), nfeatures));
+        let mut vars = Array2::zeros((distinct_labels.len(), nfeatures));
+        let mut priors = Array1::zeros(distinct_labels.len());
 
-        for (idx, label) in labels.iter().enumerate() {
-            let indeces: Vec<usize> = y
+        for (idx, label) in distinct_labels.iter().enumerate() {
+            let indeces: Vec<usize> = labels
                 .into_iter()
                 .enumerate()
                 .filter_map(|(idx, l)| match l == label {
@@ -45,7 +54,7 @@ impl<Label: Eq + Clone> Classifier<Array2<f64>, Label> for GaussianNB<Label> {
                 })
                 .collect();
 
-            let filtered_view = arr.select(Axis(0), &indeces);
+            let filtered_view = features.select(Axis(0), &indeces);
             let c = filtered_view.nrows();
 
             means
@@ -57,13 +66,15 @@ impl<Label: Eq + Clone> Classifier<Array2<f64>, Label> for GaussianNB<Label> {
         }
 
         Some(GaussianNB {
-            labels,
+            labels: distinct_labels,
             means,
             vars,
             priors,
         })
     }
+}
 
+impl<Label: Clone> Classifier<Array2<f64>, Label> for GaussianNB<Label> {
     fn labels(&self) -> &[Label] {
         &self.labels
     }

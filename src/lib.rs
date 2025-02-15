@@ -5,16 +5,57 @@
 
 use core::f64;
 
-use classification::Classifier;
 use ndarray::{Array, Axis, Dimension, RemoveAxis};
 use rand::{rng, Rng};
 
 pub mod classification;
 pub mod metrics;
+pub mod regression;
 pub mod transformer;
 
+/// Trait for fitting classification and regression models, and transformers.
+///
+/// The struct on which this trait is implemented holds and validates the hyperparameters necessary
+/// to fit the estimator to the desired output. For example, a classification model may take as
+/// input a tuple with features and labels:
+/// ```
+/// use ndarray::{Array1, Array2};
+/// use rs_ml::Estimator;
+///
+/// struct ModelParameters {
+///   // Hyperparameters required to fit the model
+///   learning_rate: f64
+/// }
+///
+/// struct Model {
+///     // Internal state of model required to predict features
+///     means: Array2<f64>
+/// };
+///
+/// impl Estimator<(Array2<f64>, Array1<String>)> for ModelParameters {
+///     type Estimator = Model;
+///
+///     fn fit(&self, input: &(Array2<f64>, Array1<String>)) -> Option<Self::Estimator> {
+///         let (features, labels) = input;
+///
+///         // logic to fit the model
+///         Some(Model {
+///             means: Array2::zeros((1, 1))
+///         })
+///     }
+/// }
+/// ```
+pub trait Estimator<Input> {
+    /// Output model or transformer fitted to input data.
+    type Estimator;
+
+    /// Fit model or transformer based on given inputs, or None if the estimator was not able to
+    /// fit to the input data as expected.
+    fn fit(&self, input: &Input) -> Option<Self::Estimator>;
+}
+
 /// Split data and features into training and testing set. `test_size` must be between 0 and 1.
-/// panics if `test_size` is outside 0 and 1.
+/// Panics if `test_size` is outside 0 and 1.
 pub fn train_test_split<
     D: Dimension + RemoveAxis,
     D2: Dimension + RemoveAxis,

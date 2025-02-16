@@ -60,6 +60,16 @@ pub trait Estimator<Input> {
     fn fit(&self, input: &Input) -> Option<Self::Estimator>;
 }
 
+/// Train test split result. returns in order training features, testing features, training labels,
+/// testing labels.
+#[derive(Debug, Clone)]
+pub struct TrainTestSplitResult<Feature, Label, D: Dimension, D2: Dimension>(
+    pub Array<Feature, D>,
+    pub Array<Feature, D>,
+    pub Array<Label, D2>,
+    pub Array<Label, D2>,
+);
+
 /// Split data and features into training and testing set. `test_size` must be between 0 and 1.
 ///
 /// # Panics
@@ -68,7 +78,7 @@ pub trait Estimator<Input> {
 ///
 /// Example:
 /// ```
-/// use rs_ml::train_test_split;
+/// use rs_ml::{train_test_split, TrainTestSplitResult};
 /// use ndarray::{arr1, arr2};
 ///
 /// let features = arr2(&[
@@ -79,7 +89,7 @@ pub trait Estimator<Input> {
 ///
 /// let labels = arr1(&[1, 1, 0, 0]);
 ///
-/// let (train_features, test_features, train_labels, test_labels) = train_test_split(&features,
+/// let TrainTestSplitResult(train_features, test_features, train_labels, test_labels) = train_test_split(&features,
 /// &labels, 0.25);
 /// ```
 pub fn train_test_split<
@@ -91,18 +101,13 @@ pub fn train_test_split<
     arr: &Array<Feature, D>,
     y: &Array<Label, D2>,
     test_size: f64,
-) -> (
-    Array<Feature, D>,
-    Array<Feature, D>,
-    Array<Label, D2>,
-    Array<Label, D2>,
-) {
+) -> TrainTestSplitResult<Feature, Label, D, D2> {
     let rows = arr.shape()[0];
 
     let (test, train): (Vec<usize>, Vec<usize>) =
         (0..rows).partition(|_| rng().random_bool(test_size));
 
-    (
+    TrainTestSplitResult(
         arr.select(Axis(0), &train),
         arr.select(Axis(0), &test),
         y.select(Axis(0), &train),

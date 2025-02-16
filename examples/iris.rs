@@ -2,12 +2,12 @@ use ndarray::{Array, Array1};
 use rand::{rng, seq::SliceRandom};
 use rs_ml::classification::Classifier;
 use rs_ml::metrics::accuracy;
-use rs_ml::train_test_split;
 use rs_ml::transformer::Transformer;
 use rs_ml::Estimator;
 use rs_ml::{
     classification::naive_bayes::GaussianNBEstimator, transformer::scalers::StandardScalerParams,
 };
+use rs_ml::{train_test_split, TrainTestSplitResult};
 use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize)]
@@ -42,7 +42,7 @@ fn main() {
         labels.push(data.species.clone());
     }
 
-    let (train_features, test_features, train_label, test_labels) =
+    let TrainTestSplitResult(train_features, test_features, train_label, test_labels) =
         train_test_split(&iris, &Array1::from_vec(labels), 0.25);
 
     let scaler = StandardScalerParams.fit(&train_features).unwrap();

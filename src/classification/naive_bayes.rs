@@ -29,7 +29,7 @@ use super::Classifier;
 #[derive(Debug, Clone, Copy)]
 pub struct GaussianNBEstimator;
 
-/// Represents a fitted Gaussian Naive Bayes Classifier.
+/// Represents a fitted Gaussian Naive Bayes Classifier. Created with the `fit()` function implemented for [GaussianNBEstimator].
 #[derive(Debug)]
 pub struct GaussianNB<Label> {
     means: Array2<f64>,

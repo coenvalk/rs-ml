@@ -14,9 +14,7 @@ pub struct StandardScalerParams;
 
 /// Params required to fit a min max scaler.
 #[derive(Default, Debug, Clone, Copy)]
-pub struct MinMaxScalerParams<F> {
-    _data: PhantomData<F>,
-}
+pub struct MinMaxScalerParams<F>(PhantomData<F>);
 
 /// Transforms input data to 0 mean, unit variance.
 #[derive(Debug, Clone)]

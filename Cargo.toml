@@ -1,6 +1,6 @@
 [package]
 name = "rs-ml"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2021"
 license = "MIT"
 description = "Simple ML crate including Gaussian Naive Bayesian classifier"
@@ -9,6 +9,7 @@ repository = "https://github.com/coenvalk/rs-ml"
 
 [dependencies]
 ndarray = "0.16.1"
+ndarray-linalg = "0.17.0"
 num-traits = "0.2.19"
 rand = "0.9.0"
 
@@ -18,3 +19,8 @@ serde = { version = "1.0.217", features = ["derive"] }
 
 [badges]
 maintenance = { status = "experimental" }
+
+[features]
+openblas = ["ndarray-linalg/openblas-static"]
+netlib = ["ndarray-linalg/netlib-static"]
+intel-mkl = ["ndarray-linalg/intel-mkl-static"]

@@ -9,8 +9,6 @@
     clippy::missing_panics_doc
 )]
 
-use core::f64;
-
 use ndarray::{Array, Axis, Dimension, RemoveAxis};
 use rand::{rng, Rng};
 

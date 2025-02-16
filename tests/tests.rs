@@ -1,9 +1,12 @@
 use std::hint::black_box;
 
+use ndarray::arr1;
 use ndarray::arr2;
 use ndarray::Axis;
 use rs_ml::classification::naive_bayes::GaussianNBEstimator;
 use rs_ml::classification::Classifier;
+use rs_ml::regression::linear::OrdinaryLeastSquaresEstimator;
+use rs_ml::regression::Regressor;
 use rs_ml::transformer::scalers::MinMaxScalerParams;
 use rs_ml::transformer::scalers::StandardScalerParams;
 use rs_ml::transformer::FitTransform;
@@ -68,4 +71,16 @@ fn test_fit_transform() {
     let scaled_values = MinMaxScalerParams::new().fit_transform(&arr).unwrap();
 
     black_box(scaled_values);
+}
+
+#[test]
+fn test_ols() {
+    // y ~ 2x + 1
+    let x = arr2(&[[0.], [1.], [2.]]);
+    let y = arr1(&[1.1, 2.8, 5.3]);
+
+    let regressor = OrdinaryLeastSquaresEstimator.fit(&(&x, &y)).unwrap();
+
+    let guess = regressor.predict(&x).unwrap();
+    println!("{:#?}", guess);
 }

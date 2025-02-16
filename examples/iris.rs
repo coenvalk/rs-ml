@@ -57,7 +57,10 @@ fn main() {
 
     println!("likelihood of");
     println!("{:#?}", model.labels());
-    println!("{:.4}", class_likelihoods);
+
+    for (likelihoods, prediction) in class_likelihoods.rows().into_iter().zip(&inference) {
+        println!("{:.4}: {}", likelihoods, prediction)
+    }
 
     let accuracy = accuracy(test_labels, inference).unwrap();
     println!("Accuracy: {:.4}", accuracy);

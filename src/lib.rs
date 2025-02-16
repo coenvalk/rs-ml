@@ -1,6 +1,13 @@
 //! rs-ml is a simple ML framework for the Rust language. it includes train test splitting,
 //! scalers, and a guassian naive bayes model. It also includes traits to add more transfomers and
 //! models to the framework.
+//!
+//! # Usage
+//!
+//! this library requires a compute backend to perform matrix operations. Compute backends are
+//! exposed with provided feature flags. Refer to the
+//! [ndarray_linalg](https://github.com/rust-ndarray/ndarray-linalg?tab=readme-ov-file#backend-features)
+//! docs for more information.
 #![deny(
     missing_docs,
     unsafe_code,

@@ -1,4 +1,4 @@
-//! Linear regression models
+//! Linear regression models.
 
 use ndarray::{Array1, Array2, Axis};
 use ndarray_linalg::Inverse;
@@ -7,11 +7,30 @@ use crate::Estimator;
 
 use super::Regressor;
 
-/// Estimator for a linear ordinary least squares model
+/// Estimator which fits an [OrdinaryLeastSquaresRegressor].
+///
+/// ```
+/// # use ndarray::{arr1, arr2};
+/// # use rs_ml::regression::linear::OrdinaryLeastSquaresEstimator;
+/// # use rs_ml::Estimator;
+/// # use rs_ml::regression::Regressor;
+/// # fn test() -> Option<()> {
+/// let x = arr2(&[[0.], [1.], [2.], [3.]]);
+/// let y = arr1(&[0.98, 3.06, 4.89, 7.1]); // y ~ 2x + 1
+/// let future_x = arr2(&[[4.], [5.], [6.], [7.]]);
+///
+/// let model = OrdinaryLeastSquaresEstimator.fit(&(&x, &y))?;
+/// let predictions = model.predict(&future_x)?;
+/// # Some(())
+/// # }
+/// # fn main() {
+/// #   test();
+/// # }
+/// ```
 #[derive(Debug, Clone, Copy)]
 pub struct OrdinaryLeastSquaresEstimator;
 
-/// Fitted regression model for ordinary least squares
+/// Ordinary least squares regression model fitted by [OrdinaryLeastSquaresEstimator].
 #[derive(Debug, Clone)]
 pub struct OrdinaryLeastSquaresRegressor {
     beta: Array2<f64>,

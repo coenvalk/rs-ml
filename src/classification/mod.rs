@@ -12,11 +12,12 @@ where
     /// Labels on which the model is fitted.
     fn labels(&self) -> &[Label];
 
-    /// Predicts likelihood of each class per record. rows correspond to each record, columns are
+    /// Estimates likelihood of each class per record. Rows correspond to each record, columns are
     /// in the same order as label function.
     fn predict_proba(&self, arr: &Features) -> Option<Array2<f64>>;
 
-    /// Provided function which returns the most likely class per record.
+    /// Provided function which returns the most likely class per record based on the results of
+    /// `predict_proba()`.
     fn predict(&self, arr: &Features) -> Option<Vec<Label>> {
         let l = self.labels();
         let predictions = self.predict_proba(arr)?;

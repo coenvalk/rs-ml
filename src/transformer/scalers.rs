@@ -1,4 +1,4 @@
-//! Scalers to limit, normalize range
+//! Commonly used scalers to limit, normalize range
 
 use ndarray::{Array1, Array2, Axis};
 use num_traits::Float;
@@ -23,7 +23,8 @@ pub struct StandardScaler {
     std_devs: Array1<f64>,
 }
 
-/// Scales range of input data to between 0 and 1 linearly.
+/// Scales range of input data to between 0 and 1 linearly - keeping outliers, but limiting the
+/// output domain.
 #[derive(Debug, Clone)]
 pub struct MinMaxScaler<F> {
     min_value: F,

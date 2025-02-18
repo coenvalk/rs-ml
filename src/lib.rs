@@ -4,7 +4,7 @@
 //!
 //! # Usage
 //!
-//! this library requires a compute backend to perform matrix operations. Compute backends are
+//! This library requires a compute backend to perform matrix operations. Compute backends are
 //! exposed with provided feature flags. Refer to the
 //! [ndarray_linalg](https://github.com/rust-ndarray/ndarray-linalg?tab=readme-ov-file#backend-features)
 //! docs for more information.

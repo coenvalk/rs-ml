@@ -1,4 +1,4 @@
-//! Abilities to transform and scale data.
+//! Functionality to transform and scale data.
 
 use crate::Estimator;
 

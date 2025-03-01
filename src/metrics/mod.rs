@@ -1,5 +1,9 @@
 //! Commonly used metrics for classification and regression models.
 
+use num_traits::Float;
+
+use crate::iterative_mean;
+
 /// Calculates the accuracy in predicted labels and ground truth.
 ///
 /// Accuracy is defined as the ratio between the number of correct predictions divided by the
@@ -28,4 +32,20 @@ where
         .count() as f64;
 
     Some(a / count as f64)
+}
+
+pub fn mean_squared_error<I1, I2, Feature>(ground_truth: I1, inference: I2) -> Option<Feature>
+where
+    for<'a> &'a I1: IntoIterator<Item = &'a Feature>,
+    for<'b> &'b I2: IntoIterator<Item = &'b Feature>,
+    Feature: Float,
+{
+    let i1 = ground_truth.into_iter();
+    let i2 = inference.into_iter();
+
+    let pairs = i1
+        .zip(i2)
+        .map(|(ground_truth, inference)| (*ground_truth - *inference).powi(2));
+
+    iterative_mean(pairs)
 }

@@ -17,6 +17,7 @@
 )]
 
 use ndarray::{Array, Axis, Dimension, RemoveAxis};
+use num_traits::{ops, Float};
 use rand::{rng, Rng};
 
 pub mod classification;
@@ -118,4 +119,17 @@ pub fn train_test_split<
         y.select(Axis(0), &train),
         y.select(Axis(0), &test),
     )
+}
+
+fn iterative_mean<I, F>(it: I) -> Option<F>
+where
+    for<'a> &'a I: Iterator<Item = &'a F>,
+    F: Float,
+{
+    it.enumerate().fold(None, |acc, (i, curr)| {
+        let idx: F = F::from(i)?;
+        let idx_inc_1: F = F::from(i + 1)?;
+
+        Some((idx / idx_inc_1) * acc.unwrap_or(F::zero()) + *curr / idx_inc_1)
+    })
 }

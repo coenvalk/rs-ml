@@ -17,7 +17,7 @@
 )]
 
 use ndarray::{Array, Axis, Dimension, RemoveAxis};
-use num_traits::{ops, Float};
+use num_traits::Float;
 use rand::{rng, Rng};
 
 pub mod classification;
@@ -123,10 +123,10 @@ pub fn train_test_split<
 
 fn iterative_mean<I, F>(it: I) -> Option<F>
 where
-    for<'a> &'a I: Iterator<Item = &'a F>,
+    for<'a> &'a I: IntoIterator<Item = &'a F>,
     F: Float,
 {
-    it.enumerate().fold(None, |acc, (i, curr)| {
+    it.into_iter().enumerate().fold(None, |acc, (i, curr)| {
         let idx: F = F::from(i)?;
         let idx_inc_1: F = F::from(i + 1)?;
 

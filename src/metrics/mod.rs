@@ -34,6 +34,7 @@ where
     Some(a / count as f64)
 }
 
+/// Mean squared error between ground truth and inference.
 pub fn mean_squared_error<I1, I2, Feature>(ground_truth: I1, inference: I2) -> Option<Feature>
 where
     for<'a> &'a I1: IntoIterator<Item = &'a Feature>,
@@ -43,9 +44,10 @@ where
     let i1 = ground_truth.into_iter();
     let i2 = inference.into_iter();
 
-    let pairs = i1
+    let pairs: Vec<_> = i1
         .zip(i2)
-        .map(|(ground_truth, inference)| (*ground_truth - *inference).powi(2));
+        .map(|(ground_truth, inference): (&Feature, &Feature)| (*ground_truth - *inference).powi(2))
+        .collect();
 
     iterative_mean(pairs)
 }

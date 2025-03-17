@@ -3,7 +3,6 @@ use std::hint::black_box;
 use ndarray::arr1;
 use ndarray::arr2;
 use ndarray::Array1;
-use ndarray::Array2;
 use ndarray::Axis;
 use rs_ml::classification::naive_bayes::GaussianNBEstimator;
 use rs_ml::classification::ClassificationDataSet;

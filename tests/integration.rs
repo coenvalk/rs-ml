@@ -1,14 +1,5 @@
-use std::convert::Infallible;
-
-use ndarray::{arr1, Array, Array1};
-use rand::{prelude::SliceRandom, rng};
-use rs_ml::{
-    classification::{naive_bayes::GaussianNBEstimator, ClassificationDataSet, Classifier},
-    metrics::accuracy,
-    train_test_split,
-    transformer::{scalers::StandardScalerParams, Transformer},
-    Estimator, TrainTestSplitResult,
-};
+use ndarray::arr1;
+use rs_ml::classification::ClassificationDataSet;
 use serde::{Deserialize, Serialize};
 use std::error::Error;
 
@@ -40,7 +31,7 @@ fn integration_test() -> Result<(), Box<dyn Error>> {
         |row: &Iris| row.species.clone(),
     );
 
-    let a = dataset.get_labels();
+    let _a = dataset.get_labels();
 
     Ok(())
 }

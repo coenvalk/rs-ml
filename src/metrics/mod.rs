@@ -44,10 +44,11 @@ where
     let i1 = ground_truth.into_iter();
     let i2 = inference.into_iter();
 
-    let pairs: Vec<_> = i1
+    let pairs = i1
         .zip(i2)
-        .map(|(ground_truth, inference): (&Feature, &Feature)| (*ground_truth - *inference).powi(2))
-        .collect();
+        .map(|(ground_truth, inference): (&Feature, &Feature)| {
+            (*ground_truth - *inference).powi(2)
+        });
 
     iterative_mean(pairs)
 }

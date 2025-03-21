@@ -123,13 +123,13 @@ pub fn train_test_split<
 
 fn iterative_mean<I, F>(it: I) -> Option<F>
 where
-    for<'a> &'a I: IntoIterator<Item = &'a F>,
+    I: Iterator<Item = F>,
     F: Float,
 {
     it.into_iter().enumerate().fold(None, |acc, (i, curr)| {
         let idx: F = F::from(i)?;
         let idx_inc_1: F = F::from(i + 1)?;
 
-        Some((idx / idx_inc_1) * acc.unwrap_or(F::zero()) + *curr / idx_inc_1)
+        Some((idx / idx_inc_1) * acc.unwrap_or(F::zero()) + curr / idx_inc_1)
     })
 }

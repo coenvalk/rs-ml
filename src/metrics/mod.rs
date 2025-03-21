@@ -46,9 +46,7 @@ where
 
     let pairs = i1
         .zip(i2)
-        .map(|(ground_truth, inference): (&Feature, &Feature)| {
-            (*ground_truth - *inference).powi(2)
-        });
+        .map(|(ground_truth, inference)| (*ground_truth - *inference).powi(2));
 
     iterative_mean(pairs)
 }

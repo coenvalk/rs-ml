@@ -37,6 +37,14 @@ impl<Features, Label> From<Vec<ClassificationRecord<Features, Label>>>
     }
 }
 
+impl<Features, Label> From<(Vec<Features>, Vec<Label>)> for ClassificationDataSet<Features, Label> {
+    fn from((train, test): (Vec<Features>, Vec<Label>)) -> Self {
+        ClassificationDataSet {
+            dataset: train.into_iter().zip(test).map(|r| r.into()).collect(),
+        }
+    }
+}
+
 impl<Features, Label> ClassificationDataSet<Features, Label> {
     /// get labels for record
     pub fn get_labels(&self) -> Vec<&Label> {
@@ -46,6 +54,16 @@ impl<Features, Label> ClassificationDataSet<Features, Label> {
     /// get features
     pub fn get_features(&self) -> Vec<&Features> {
         self.dataset.iter().map(|record| &record.features).collect()
+    }
+
+    /// get records
+    pub fn get_records(&self) -> &Vec<ClassificationRecord<Features, Label>> {
+        &self.dataset
+    }
+
+    /// consume records of dataset
+    pub fn consume_records(self) -> Vec<ClassificationRecord<Features, Label>> {
+        self.dataset
     }
 
     /// Create dataset from iterator of structs
@@ -76,11 +94,16 @@ where
 
     /// Estimates likelihood of each class per record. Rows correspond to each record, columns are
     /// in the same order as label function.
-    fn predict_proba(&self, arr: &Features) -> Option<Array2<f64>>;
+    fn predict_proba<I>(&self, arr: I) -> Option<Array2<f64>>
+    where
+        I: Iterator<Item = Features>;
 
     /// Provided function which returns the most likely class per record based on the results of
     /// `predict_proba()`.
-    fn predict(&self, arr: &Features) -> Option<Vec<Label>> {
+    fn predict<I>(&self, arr: I) -> Option<Vec<Label>>
+    where
+        I: Iterator<Item = Features>,
+    {
         let l = self.labels();
         let predictions = self.predict_proba(arr)?;
 

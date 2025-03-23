@@ -113,24 +113,34 @@ impl<Label: PartialEq + Clone> Estimator<ClassificationDataSet<Array1<f64>, Labe
     }
 }
 
-impl<Label: Clone> Classifier<Array2<f64>, Label> for GaussianNB<Label> {
+impl<Label: Clone> Classifier<Array1<f64>, Label> for GaussianNB<Label> {
     fn labels(&self) -> &[Label] {
         &self.labels
     }
 
-    fn predict_proba(&self, arr: &Array2<f64>) -> Option<Array2<f64>> {
-        let broadcasted_means = self.means.view().insert_axis(Axis(1));
-        let broadcasted_vars = self.vars.view().insert_axis(Axis(1));
-        let broadcasted_log_priors = self.priors.view().insert_axis(Axis(1)).ln();
+    fn predict_proba<I>(&self, arr: I) -> Option<Array2<f64>>
+    where
+        I: Iterator<Item = Array1<f64>>,
+    {
+        let col_count = self.labels.len();
 
-        let log_likelihood = -0.5 * (&broadcasted_vars * 2.0 * PI).ln().sum_axis(Axis(2))
-            - 0.5 * ((arr - &broadcasted_means).pow2() / broadcasted_vars).sum_axis(Axis(2))
-            + broadcasted_log_priors;
+        let likelihoods: Vec<_> = arr
+            .map(|record| {
+                let mut log_likelihood = -0.5 * (&self.vars.view() * 2.0 * PI).ln();
+                log_likelihood =
+                    log_likelihood - 0.5 * ((record - &self.means).pow2() / self.vars.view());
 
-        let likelihood = log_likelihood.exp().t().to_owned();
+                log_likelihood = log_likelihood + self.priors.view().insert_axis(Axis(1)).ln();
 
-        let likelihood = &likelihood / &likelihood.sum_axis(Axis(1)).insert_axis(Axis(1));
+                let likelihood = log_likelihood.sum_axis(Axis(1)).exp().to_owned();
 
-        Some(likelihood)
+                &likelihood / likelihood.sum()
+            })
+            .flat_map(|likelihoods| likelihoods.into_iter())
+            .collect();
+
+        let row_count = likelihoods.len() / col_count;
+
+        Array2::from_shape_vec((row_count, col_count), likelihoods).ok()
     }
 }

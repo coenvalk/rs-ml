@@ -39,7 +39,7 @@ fn it_works() {
 
     let model = GaussianNBEstimator.fit(&dataset).unwrap();
 
-    model.predict(&arr);
+    model.predict(arr.rows().into_iter().map(|row| row.to_owned()));
 }
 
 #[test]

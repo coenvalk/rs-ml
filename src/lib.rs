@@ -16,9 +16,9 @@
     clippy::missing_panics_doc
 )]
 
-use ndarray::{Array, Axis, Dimension, RemoveAxis};
+use classification::ClassificationDataSet;
+use ndarray::Axis;
 use num_traits::Float;
-use rand::{rng, Rng};
 
 pub mod classification;
 pub mod metrics;
@@ -69,11 +69,11 @@ pub trait Estimator<Input> {
 /// Train test split result. returns in order training features, testing features, training labels,
 /// testing labels.
 #[derive(Debug, Clone)]
-pub struct TrainTestSplitResult<Feature, Label, D: Dimension, D2: Dimension>(
-    pub Array<Feature, D>,
-    pub Array<Feature, D>,
-    pub Array<Label, D2>,
-    pub Array<Label, D2>,
+pub struct SplitDataset<Feature, Label>(
+    pub Vec<Feature>,
+    pub Vec<Feature>,
+    pub Vec<Label>,
+    pub Vec<Label>,
 );
 
 /// Split data and features into training and testing set. `test_size` must be between 0 and 1.
@@ -84,7 +84,8 @@ pub struct TrainTestSplitResult<Feature, Label, D: Dimension, D2: Dimension>(
 ///
 /// Example:
 /// ```
-/// use rs_ml::{train_test_split, TrainTestSplitResult};
+/// use rs_ml::{train_test_split};
+/// use rs_ml::classification::ClassificationDataSet;
 /// use ndarray::{arr1, arr2};
 ///
 /// let features = arr2(&[
@@ -93,31 +94,27 @@ pub struct TrainTestSplitResult<Feature, Label, D: Dimension, D2: Dimension>(
 ///   [0., 0.],
 ///   [1., 1.]]);
 ///
-/// let labels = arr1(&[1, 1, 0, 0]);
+/// let labels = vec![1, 1, 0, 0];
 ///
-/// let TrainTestSplitResult(train_features, test_features, train_labels, test_labels) = train_test_split(&features,
-/// &labels, 0.25);
+/// let dataset = ClassificationDataSet::from((features.rows().into_iter().collect(), labels));
+///
+/// let (train, test) = train_test_split(dataset, 0.25);
 /// ```
-pub fn train_test_split<
-    D: Dimension + RemoveAxis,
-    D2: Dimension + RemoveAxis,
-    Feature: Clone,
-    Label: Clone,
->(
-    arr: &Array<Feature, D>,
-    y: &Array<Label, D2>,
+pub fn train_test_split<Feature, Label>(
+    dataset: ClassificationDataSet<Feature, Label>,
     test_size: f64,
-) -> TrainTestSplitResult<Feature, Label, D, D2> {
-    let rows = arr.shape()[0];
+) -> (
+    ClassificationDataSet<Feature, Label>,
+    ClassificationDataSet<Feature, Label>,
+) {
+    let (train, test): (Vec<_>, Vec<_>) = dataset
+        .consume_records()
+        .into_iter()
+        .partition(|_| rand::random_bool(test_size));
 
-    let (test, train): (Vec<usize>, Vec<usize>) =
-        (0..rows).partition(|_| rng().random_bool(test_size));
-
-    TrainTestSplitResult(
-        arr.select(Axis(0), &train),
-        arr.select(Axis(0), &test),
-        y.select(Axis(0), &train),
-        y.select(Axis(0), &test),
+    (
+        ClassificationDataSet::from(train),
+        ClassificationDataSet::from(test),
     )
 }
 

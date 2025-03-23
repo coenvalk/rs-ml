@@ -1,5 +1,9 @@
 use ndarray::arr1;
-use rs_ml::classification::ClassificationDataSet;
+use rs_ml::{
+    classification::{naive_bayes::GaussianNBEstimator, ClassificationDataSet, Classifier},
+    metrics::accuracy,
+    train_test_split, Estimator,
+};
 use serde::{Deserialize, Serialize};
 use std::error::Error;
 
@@ -31,7 +35,23 @@ fn integration_test() -> Result<(), Box<dyn Error>> {
         |row: &Iris| row.species.clone(),
     );
 
-    let _a = dataset.get_labels();
+    let (train_dataset, test_dataset) = train_test_split(dataset, 0.25);
+
+    let model = GaussianNBEstimator.fit(&train_dataset).unwrap();
+    let inference = model
+        .predict(
+            test_dataset
+                .get_features()
+                .into_iter()
+                .map(|row| row.to_owned()),
+        )
+        .unwrap();
+
+    let labels: Vec<_> = test_dataset.get_labels().into_iter().cloned().collect();
+
+    println!("{}, {}", labels.len(), inference.len());
+
+    println!("{}", accuracy(labels, inference).unwrap());
 
     Ok(())
 }

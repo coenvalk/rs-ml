@@ -34,6 +34,7 @@ where
     Some(a / count as f64)
 }
 
+/// Mean squared error between ground truth and inference.
 pub fn mean_squared_error<I1, I2, Feature>(ground_truth: I1, inference: I2) -> Option<Feature>
 where
     for<'a> &'a I1: IntoIterator<Item = &'a Feature>,

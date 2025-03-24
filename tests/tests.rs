@@ -2,8 +2,11 @@ use std::hint::black_box;
 
 use ndarray::arr1;
 use ndarray::arr2;
+use ndarray::Array1;
 use ndarray::Axis;
 use rs_ml::classification::naive_bayes::GaussianNBEstimator;
+use rs_ml::classification::ClassificationDataSet;
+use rs_ml::classification::ClassificationRecord;
 use rs_ml::classification::Classifier;
 use rs_ml::regression::linear::OrdinaryLeastSquaresEstimator;
 use rs_ml::regression::Regressor;
@@ -24,9 +27,19 @@ fn it_works() {
     ]);
 
     let labels = vec![true, false, true, false, false];
-    let model = GaussianNBEstimator.fit(&(&arr, labels)).unwrap();
 
-    model.predict(&arr);
+    let records: Vec<_> = arr
+        .rows()
+        .into_iter()
+        .zip(labels)
+        .map(|(row, label)| ClassificationRecord::from((row.to_owned(), label)))
+        .collect();
+
+    let dataset: ClassificationDataSet<Array1<f64>, bool> = ClassificationDataSet::from(records);
+
+    let model = GaussianNBEstimator.fit(&dataset).unwrap();
+
+    model.predict(arr.rows().into_iter().map(|row| row.to_owned()));
 }
 
 #[test]

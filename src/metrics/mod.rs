@@ -1,5 +1,7 @@
 //! Commonly used metrics for classification and regression models.
 
+use std::ops::{Div, Mul};
+
 use num_traits::Float;
 
 use crate::iterative_mean;
@@ -39,7 +41,7 @@ pub fn mean_squared_error<I1, I2, Feature>(ground_truth: I1, inference: I2) -> O
 where
     for<'a> &'a I1: IntoIterator<Item = &'a Feature>,
     for<'b> &'b I2: IntoIterator<Item = &'b Feature>,
-    Feature: Float,
+    Feature: Float + Default + Div<f64, Output = Feature> + Mul<f64, Output = Feature>,
 {
     let i1 = ground_truth.into_iter();
     let i2 = inference.into_iter();

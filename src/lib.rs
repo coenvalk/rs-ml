@@ -16,9 +16,12 @@
     clippy::missing_panics_doc
 )]
 
+use std::ops::Add;
+use std::ops::Div;
+use std::ops::Mul;
+
 use classification::ClassificationDataSet;
 use ndarray::Axis;
-use num_traits::Float;
 
 pub mod classification;
 pub mod metrics;
@@ -118,15 +121,48 @@ pub fn train_test_split<Feature, Label>(
     )
 }
 
-fn iterative_mean<I, F>(it: I) -> Option<F>
+fn iterative_mean<I, F, R>(it: I) -> Option<R>
 where
-    I: Iterator<Item = F>,
-    F: Float,
+    I: IntoIterator<Item = F>,
+    F: Into<R>,
+    R: Div<f64, Output = R> + Mul<f64, Output = R> + Add<Output = R> + Default,
 {
     it.into_iter().enumerate().fold(None, |acc, (i, curr)| {
-        let idx: F = F::from(i)?;
-        let idx_inc_1: F = F::from(i + 1)?;
+        let idx = i as f64;
+        let idx_inc_1 = (i + 1) as f64;
 
-        Some((idx / idx_inc_1) * acc.unwrap_or(F::zero()) + curr / idx_inc_1)
+        let current: R = curr.into();
+        let scaled_current = current / idx_inc_1;
+
+        match acc {
+            Some(acc) => Some(acc * (idx / idx_inc_1) + scaled_current),
+            None => Some(scaled_current),
+        }
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use ndarray::{arr1, arr2, Array1};
+
+    use crate::iterative_mean;
+
+    #[test]
+    fn test_iterative_mean_2darray() {
+        let arr = arr2(&[[0., 1., 2.], [1., 2., 3.], [2., 3., 4.]]);
+
+        let mean: Option<Array1<f64>> =
+            iterative_mean(arr.rows().into_iter().map(|row| row.to_owned()));
+
+        assert!(mean.is_some_and(|m| m.relative_eq(&arr1(&[1.0, 2.0, 3.0]), 1e-4, 1e-2)));
+    }
+
+    #[test]
+    fn test_iterative_mean_vec() {
+        let arr: Vec<f64> = vec![0., 1., 2., 3., 4.];
+
+        let mean = iterative_mean(arr);
+
+        assert_eq!(mean, Some(2.0));
+    }
 }

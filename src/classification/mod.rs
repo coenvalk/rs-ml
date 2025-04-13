@@ -29,18 +29,14 @@ impl<Features, Label> From<(Features, Label)> for ClassificationRecord<Features,
     }
 }
 
-impl<Features, Label> From<Vec<ClassificationRecord<Features, Label>>>
-    for ClassificationDataSet<Features, Label>
+impl<Itr, Record, Features, Label> From<Itr> for ClassificationDataSet<Features, Label>
+where
+    Itr: IntoIterator<Item = Record>,
+    Record: Into<ClassificationRecord<Features, Label>>,
 {
-    fn from(value: Vec<ClassificationRecord<Features, Label>>) -> Self {
-        ClassificationDataSet { dataset: value }
-    }
-}
-
-impl<Features, Label> From<(Vec<Features>, Vec<Label>)> for ClassificationDataSet<Features, Label> {
-    fn from((train, test): (Vec<Features>, Vec<Label>)) -> Self {
+    fn from(value: Itr) -> Self {
         ClassificationDataSet {
-            dataset: train.into_iter().zip(test).map(|r| r.into()).collect(),
+            dataset: value.into_iter().map(|record| record.into()).collect(),
         }
     }
 }

@@ -99,7 +99,8 @@ pub struct SplitDataset<Feature, Label>(
 ///
 /// let labels = vec![1, 1, 0, 0];
 ///
-/// let dataset = ClassificationDataSet::from((features.rows().into_iter().collect(), labels));
+/// let dataset = ClassificationDataSet::from(
+///   features.rows().into_iter().zip(labels));
 ///
 /// let (train, test) = train_test_split(dataset, 0.25);
 /// ```

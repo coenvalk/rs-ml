@@ -24,6 +24,7 @@ use classification::ClassificationDataSet;
 use ndarray::Axis;
 
 pub mod classification;
+pub mod dimensionality_reduction;
 pub mod metrics;
 pub mod regression;
 pub mod transformer;

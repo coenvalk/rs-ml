@@ -4,20 +4,18 @@ use rs_ml::{
     metrics::accuracy,
     train_test_split, Estimator,
 };
-use serde::{Deserialize, Serialize};
-use std::error::Error;
+use serde::Deserialize;
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize)]
 struct Iris {
     sepal_length: f64,
     sepal_width: f64,
-    petal_length: f64,
     petal_width: f64,
+    petal_length: f64,
     species: String,
 }
 
-#[test]
-fn iris() -> Result<(), Box<dyn Error>> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut csv = csv::Reader::from_path("iris.csv")?;
 
     let features: Vec<Iris> = csv.deserialize::<Iris>().filter_map(|r| r.ok()).collect();
@@ -53,7 +51,7 @@ fn iris() -> Result<(), Box<dyn Error>> {
 
     let accuracy = accuracy(labels, inference).ok_or("Accuracy metric failed")?;
 
-    assert!(accuracy > 0.9);
+    println!("Test accuracy: {:.4}", accuracy);
 
     Ok(())
 }

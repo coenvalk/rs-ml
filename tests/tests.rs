@@ -1,4 +1,5 @@
 use std::hint::black_box;
+use std::num::NonZero;
 
 use ndarray::arr1;
 use ndarray::arr2;
@@ -8,6 +9,7 @@ use rs_ml::classification::naive_bayes::GaussianNBEstimator;
 use rs_ml::classification::ClassificationDataSet;
 use rs_ml::classification::ClassificationRecord;
 use rs_ml::classification::Classifier;
+use rs_ml::dimensionality_reduction::pca::PCAEstimator;
 use rs_ml::regression::linear::OrdinaryLeastSquaresEstimator;
 use rs_ml::regression::Regressor;
 use rs_ml::transformer::scalers::MinMaxScalerParams;
@@ -17,7 +19,7 @@ use rs_ml::transformer::Transformer;
 use rs_ml::Estimator;
 
 #[test]
-fn it_works() {
+fn gaussian_nb() {
     let arr = arr2(&[
         [0., 1., 2.],
         [9., 77., 3.],
@@ -76,6 +78,16 @@ fn min_max_scaler() {
 }
 
 #[test]
+fn test_pca_reduce() {
+    let mat = arr2(&[[0., 1., 2.], [2., 3., 4.], [4., 5., 6.]]);
+
+    let estimator = PCAEstimator::new(NonZero::new(1).unwrap());
+    let transformed_data = estimator.fit_transform(&mat).unwrap();
+
+    black_box(transformed_data);
+}
+
+#[test]
 fn test_fit_transform() {
     let arr = vec![
         0., 1., 2., 9., 77., 3., 3., 2., 10., 2., 2., 90., 8., 24., 100.,
@@ -87,7 +99,7 @@ fn test_fit_transform() {
 }
 
 #[test]
-fn test_ols() {
+fn ols() {
     // y ~ 2x + 1
     let x = arr2(&[[0.], [1.], [2.]]);
     let y = arr1(&[1.1, 2.8, 5.3]);

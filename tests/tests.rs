@@ -1,3 +1,4 @@
+use core::f64;
 use std::hint::black_box;
 use std::num::NonZero;
 
@@ -58,10 +59,19 @@ fn standard_scaler() {
 
     let scaled = scaler.transform(&arr).unwrap();
 
-    println!("{}", scaled);
+    let mean = scaled.mean_axis(Axis(0)).unwrap();
 
-    println!("means: {}", scaled.view().mean_axis(Axis(0)).unwrap());
-    println!("std: {}", scaled.view().std_axis(Axis(0), 4.));
+    let std_dev = scaled.std_axis(Axis(0), 4.);
+
+    assert!(mean
+        .into_iter()
+        .zip(Array1::zeros(3))
+        .all(|(v, a): (f64, f64)| (v - a).abs() < 1e-3));
+
+    assert!(std_dev
+        .into_iter()
+        .zip(Array1::ones(3))
+        .all(|(v, a): (f64, f64)| (v - a).abs() < 1e-3));
 }
 
 #[test]
@@ -74,7 +84,8 @@ fn min_max_scaler() {
 
     let scaled_values = scaler.transform(&arr).unwrap();
 
-    black_box(scaled_values);
+    assert!((scaled_values.iter().fold(f64::MIN, |a, b| a.max(*b)) - 1.0).abs() < 1e-10);
+    assert!(scaled_values.iter().fold(f64::MAX, |a, b| a.min(*b)).abs() < 1e-6);
 }
 
 #[test]
@@ -83,6 +94,8 @@ fn test_pca_reduce() {
 
     let estimator = PCAEstimator::new(NonZero::new(1).unwrap());
     let transformed_data = estimator.fit_transform(&mat).unwrap();
+
+    assert_eq!(transformed_data.dim(), (3, 1));
 
     black_box(transformed_data);
 }
@@ -107,5 +120,11 @@ fn ols() {
     let regressor = OrdinaryLeastSquaresEstimator.fit(&(&x, &y)).unwrap();
 
     let guess = regressor.predict(&x).unwrap();
-    println!("{:#?}", guess);
+
+    let gt = [1., 3., 5.];
+
+    guess
+        .iter()
+        .zip(gt)
+        .for_each(|(a, b)| assert!((a - b).abs() < 1.));
 }

@@ -1,6 +1,6 @@
 //! Principal Component Analysis
 
-use std::{cmp, num::NonZeroUsize};
+use std::num::NonZeroUsize;
 
 use ndarray::{Array1, Array2, ArrayView2, Axis, ScalarOperand};
 use ndarray_linalg::{Eigh, Lapack};
@@ -42,18 +42,14 @@ impl<F: FromPrimitive + ScalarOperand + Float + Lapack<Real = F>> Estimator<Arra
 
         let (eigen_values, eigen_vectors) = cov.eigh(ndarray_linalg::UPLO::Upper).ok()?;
 
-        let mut eigen_ordering: Vec<_> = eigen_values.abs().into_iter().enumerate().collect();
+        let mut eigen_ordering: Vec<_> = (0..eigen_values.len()).collect();
 
-        eigen_ordering.sort_by(|(_, f1), (_, f2)| match f1.partial_cmp(f2) {
-            Some(o) => o,
-            None => cmp::Ordering::Equal,
-        });
+        eigen_ordering.sort_by(|i, j| eigen_values[*i].partial_cmp(&eigen_values[*j]).unwrap());
 
         let indexes: Vec<_> = eigen_ordering
             .into_iter()
             .rev()
             .take(self.dimensions.into())
-            .map(|(idx, _)| idx)
             .collect();
 
         let eigen_vec = eigen_vectors.select(Axis(1), &indexes);

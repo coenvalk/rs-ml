@@ -5,6 +5,7 @@ use std::num::NonZero;
 use ndarray::arr1;
 use ndarray::arr2;
 use ndarray::Array1;
+use ndarray::Array2;
 use ndarray::Axis;
 use rs_ml::classification::naive_bayes::GaussianNBEstimator;
 use rs_ml::classification::ClassificationDataSet;
@@ -13,6 +14,8 @@ use rs_ml::classification::Classifier;
 use rs_ml::dimensionality_reduction::pca::PCAEstimator;
 use rs_ml::regression::linear::OrdinaryLeastSquaresEstimator;
 use rs_ml::regression::Regressor;
+use rs_ml::transformer::embedding::OneHotEmbeddingEstimator;
+use rs_ml::transformer::embedding::OneHotEmbeddingTransformer;
 use rs_ml::transformer::scalers::MinMaxScalerParams;
 use rs_ml::transformer::scalers::StandardScalerParams;
 use rs_ml::transformer::FitTransform;
@@ -127,4 +130,28 @@ fn ols() {
         .iter()
         .zip(gt)
         .for_each(|(a, b)| assert!((a - b).abs() < 1.));
+}
+
+#[test]
+fn test_one_hot_encoding() {
+    let data = vec![
+        "one".to_owned(),
+        "two".to_owned(),
+        "three".to_owned(),
+        "four".to_owned(),
+    ];
+
+    let test = vec![
+        "one".to_owned(),
+        "one".to_owned(),
+        "two".to_owned(),
+        "two".to_owned(),
+    ];
+
+    let estimator = OneHotEmbeddingEstimator::new();
+
+    let transformer: OneHotEmbeddingTransformer<String> = estimator.fit(&data).unwrap();
+    let new_data: Array2<f64> = transformer.transform(&test).unwrap();
+
+    println!("{:#?}", new_data);
 }

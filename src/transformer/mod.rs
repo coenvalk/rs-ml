@@ -2,6 +2,7 @@
 
 use crate::Estimator;
 
+pub mod embedding;
 pub mod scalers;
 
 /// Generic trait to transform data.

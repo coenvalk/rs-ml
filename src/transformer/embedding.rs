@@ -14,16 +14,7 @@ use super::Transformer;
 
 /// One hot embedding
 #[derive(Copy, Clone, Debug, Default)]
-pub struct OneHotEmbeddingEstimator<V> {
-    v: V,
-}
-
-impl<V: Default> OneHotEmbeddingEstimator<V> {
-    /// default new
-    pub fn new() -> Self {
-        Self { v: V::default() }
-    }
-}
+pub struct OneHotEmbeddingEstimator;
 
 /// One hot embedding transfomer
 #[derive(Debug, Clone)]
@@ -33,16 +24,16 @@ pub struct OneHotEmbeddingTransformer<V> {
 
 /// OrderedEnumEmbeddingEstimator
 #[derive(Copy, Clone, Debug)]
-pub struct OrderedEnumEmbeddingEstimator {}
+pub struct OrderedEnumEmbeddingEstimator;
 
-impl<V: Eq + Hash + Clone, A> Estimator<A> for OneHotEmbeddingEstimator<V>
+impl<V: Eq + Hash + Clone, A> Estimator<A> for OneHotEmbeddingEstimator
 where
-    A: AsRef<[V]>,
+    for<'a> &'a A: IntoIterator<Item = &'a V>,
 {
     type Estimator = OneHotEmbeddingTransformer<V>;
 
     fn fit(&self, input: &A) -> Option<Self::Estimator> {
-        let distinct: HashSet<V> = input.as_ref().iter().cloned().collect();
+        let distinct: HashSet<V> = input.into_iter().cloned().collect();
         let map: HashMap<V, usize> = distinct
             .into_iter()
             .enumerate()

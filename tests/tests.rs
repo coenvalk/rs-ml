@@ -148,9 +148,8 @@ fn test_one_hot_encoding() {
         "two".to_owned(),
     ];
 
-    let estimator = OneHotEmbeddingEstimator::new();
-
-    let transformer: OneHotEmbeddingTransformer<String> = estimator.fit(&data).unwrap();
+    let transformer: OneHotEmbeddingTransformer<String> =
+        OneHotEmbeddingEstimator.fit(&data).unwrap();
     let new_data: Array2<f64> = transformer.transform(&test).unwrap();
 
     println!("{:#?}", new_data);

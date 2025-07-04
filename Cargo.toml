@@ -10,6 +10,7 @@ repository = "https://github.com/coenvalk/rs-ml"
 [dependencies]
 ndarray = "0.16.1"
 ndarray-linalg = "0.17.0"
+num-derive = "0.4.2"
 num-traits = "0.2.19"
 rand = "0.9.0"
 

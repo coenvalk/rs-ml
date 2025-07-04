@@ -7,6 +7,7 @@ use ndarray::arr2;
 use ndarray::Array1;
 use ndarray::Array2;
 use ndarray::Axis;
+use num_derive::ToPrimitive;
 use rs_ml::classification::naive_bayes::GaussianNBEstimator;
 use rs_ml::classification::ClassificationDataSet;
 use rs_ml::classification::ClassificationRecord;
@@ -16,6 +17,7 @@ use rs_ml::regression::linear::OrdinaryLeastSquaresEstimator;
 use rs_ml::regression::Regressor;
 use rs_ml::transformer::embedding::OneHotEmbeddingEstimator;
 use rs_ml::transformer::embedding::OneHotEmbeddingTransformer;
+use rs_ml::transformer::embedding::OrderedEnumEmbeddingTransformer;
 use rs_ml::transformer::scalers::MinMaxScalerParams;
 use rs_ml::transformer::scalers::StandardScalerParams;
 use rs_ml::transformer::FitTransform;
@@ -153,4 +155,20 @@ fn test_one_hot_encoding() {
     let new_data: Array2<f64> = transformer.transform(&test).unwrap();
 
     println!("{:#?}", new_data);
+}
+
+#[test]
+fn test_ordered_enum_encoding() {
+    #[derive(ToPrimitive)]
+    enum Enum {
+        A = 0,
+        B = 1,
+        C = 2,
+    }
+
+    let v = vec![Enum::A, Enum::B, Enum::C];
+
+    let transformed = OrderedEnumEmbeddingTransformer.transform(&v);
+
+    assert_eq!(transformed, Some(arr1(&[0, 1, 2])))
 }

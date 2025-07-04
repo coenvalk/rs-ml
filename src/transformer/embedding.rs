@@ -1,12 +1,12 @@
 //! Embed categorial features to float
 
+use num_traits::{Float, ToPrimitive};
 use std::{
     collections::{HashMap, HashSet},
     hash::Hash,
 };
 
-use ndarray::Array2;
-use num_traits::Float;
+use ndarray::{Array1, Array2};
 
 use crate::Estimator;
 
@@ -22,9 +22,9 @@ pub struct OneHotEmbeddingTransformer<V> {
     map: HashMap<V, usize>,
 }
 
-/// OrderedEnumEmbeddingEstimator
-#[derive(Copy, Clone, Debug)]
-pub struct OrderedEnumEmbeddingEstimator;
+/// OrderedEnumEmbeddingTransformer
+#[derive(Clone, Copy, Debug, Default)]
+pub struct OrderedEnumEmbeddingTransformer;
 
 impl<V: Eq + Hash + Clone, A> Estimator<A> for OneHotEmbeddingEstimator
 where
@@ -58,5 +58,16 @@ where
         }
 
         Some(ret)
+    }
+}
+
+impl<V: ToPrimitive, It> Transformer<It, Array1<usize>> for OrderedEnumEmbeddingTransformer
+where
+    for<'a> &'a It: IntoIterator<Item = &'a V>,
+{
+    fn transform(&self, input: &It) -> Option<Array1<usize>> {
+        Some(Array1::from_iter(
+            input.into_iter().map(|v| ToPrimitive::to_usize(v).unwrap()),
+        ))
     }
 }

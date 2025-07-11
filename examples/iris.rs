@@ -51,7 +51,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let accuracy = accuracy(labels, inference).ok_or("Accuracy metric failed")?;
 
-    println!("Test accuracy: {:.4}", accuracy);
+    println!("Test accuracy: {accuracy:.4}");
 
     Ok(())
 }

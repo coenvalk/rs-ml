@@ -7,7 +7,7 @@ use crate::Estimator;
 
 use super::Regressor;
 
-/// Estimator which fits an `[OrdinaryLeastSquaresRegressor]`.
+/// Estimator which fits an [`OrdinaryLeastSquaresRegressor`].
 ///
 /// ```
 /// # use ndarray::{arr1, arr2};
@@ -30,7 +30,7 @@ use super::Regressor;
 #[derive(Debug, Clone, Copy)]
 pub struct OrdinaryLeastSquaresEstimator;
 
-/// Ordinary least squares regression model fitted by `[OrdinaryLeastSquaresEstimator]`.
+/// Ordinary least squares regression model fitted by [`OrdinaryLeastSquaresEstimator`].
 #[derive(Debug, Clone)]
 pub struct OrdinaryLeastSquaresRegressor {
     beta: Array2<f64>,

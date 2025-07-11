@@ -154,7 +154,7 @@ fn test_one_hot_encoding() {
         OneHotEmbeddingEstimator.fit(&data).unwrap();
     let new_data: Array2<f64> = transformer.transform(&test).unwrap();
 
-    println!("{:#?}", new_data);
+    assert_eq!(new_data.dim(), (4, 4));
 }
 
 #[test]

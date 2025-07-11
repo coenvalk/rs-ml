@@ -8,7 +8,37 @@ use num_traits::{Float, FromPrimitive};
 
 use crate::{transformer::Transformer, Estimator};
 
-/// Estimator to reduce dimension of a input variable
+/// Estimator to reduce dimension of input data using principal component analysis. returns a
+/// fitted [`PCATransformer`]
+///
+/// ```rust
+/// # use std::error::Error;
+/// # use ndarray::arr2;
+/// # use rs_ml::Estimator;
+/// # use rs_ml::transformer::FitTransform;
+/// # use rs_ml::dimensionality_reduction::pca::{PCAEstimator, PCATransformer};
+/// # use std::num::NonZeroUsize;
+/// # fn main() -> Result<(), Box<dyn Error>> {
+/// let arr = arr2(&[
+///     [0., 1., 3.],
+///     [1., 2., 3.],
+///     [2., 3., 3.]
+/// ]);
+///
+/// let pca_estimator = PCAEstimator::new(NonZeroUsize::new(1).unwrap());
+/// let pca = pca_estimator
+///         .fit_transform(&arr)
+///         .ok_or(Box::<dyn Error>::from("Error fitting data"))?;
+///
+/// assert!(
+///     pca.abs_diff_eq(
+///         &arr2(&[[-f64::sqrt(2.)], [0.], [f64::sqrt(2.)]]),
+///         1e-10
+///     )
+/// );
+/// # Ok(())
+/// # }
+/// ```
 #[derive(Clone, Debug, Copy)]
 pub struct PCAEstimator {
     dimensions: NonZeroUsize,
@@ -34,21 +64,22 @@ impl<F: FromPrimitive + ScalarOperand + Float + Lapack<Real = F>> Estimator<Arra
     type Estimator = PCATransformer<F>;
 
     fn fit(&self, input: &Array2<F>) -> Option<Self::Estimator> {
-        let ddof = F::from_usize(input.nrows())?;
-        let means: Array1<F> = input.mean_axis(Axis(1))?;
+        let ddof = F::from_usize(input.ncols())?;
+        let means: Array1<F> = input.mean_axis(Axis(0))?;
         let translated: Array2<F> = input - &means;
         let t: ArrayView2<F> = translated.t();
         let cov: Array2<F> = t.dot(&translated) / ddof;
 
         let (eigen_values, eigen_vectors) = cov.eigh(ndarray_linalg::UPLO::Upper).ok()?;
 
+        println!("COV: {}", cov);
+
         let mut eigen_ordering: Vec<_> = (0..eigen_values.len()).collect();
 
-        eigen_ordering.sort_by(|i, j| eigen_values[*i].partial_cmp(&eigen_values[*j]).unwrap());
+        eigen_ordering.sort_by(|i, j| eigen_values[*j].partial_cmp(&eigen_values[*i]).unwrap());
 
         let indexes: Vec<_> = eigen_ordering
             .into_iter()
-            .rev()
             .take(self.dimensions.into())
             .collect();
 

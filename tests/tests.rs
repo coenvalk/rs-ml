@@ -95,14 +95,29 @@ fn min_max_scaler() {
 
 #[test]
 fn test_pca_reduce() {
-    let mat = arr2(&[[0., 1., 2.], [2., 3., 4.], [4., 5., 6.]]);
+    let mat = arr2(&[
+        [0., 1., 3.],
+        [1., 2., 3.],
+        [2., 3., 3.],
+        [3., 4., 3.],
+        [4., 5., 3.],
+    ]);
 
     let estimator = PCAEstimator::new(NonZero::new(1).unwrap());
     let transformed_data = estimator.fit_transform(&mat).unwrap();
 
-    assert_eq!(transformed_data.dim(), (3, 1));
+    assert_eq!(transformed_data.dim(), (5, 1));
 
-    black_box(transformed_data);
+    assert!(transformed_data.abs_diff_eq(
+        &arr2(&[
+            [-2. * f64::sqrt(2.)],
+            [-f64::sqrt(2.)],
+            [0.],
+            [f64::sqrt(2.)],
+            [2. * f64::sqrt(2.)]
+        ]),
+        1e-10
+    ))
 }
 
 #[test]

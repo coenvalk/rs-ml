@@ -72,8 +72,6 @@ impl<F: FromPrimitive + ScalarOperand + Float + Lapack<Real = F>> Estimator<Arra
 
         let (eigen_values, eigen_vectors) = cov.eigh(ndarray_linalg::UPLO::Upper).ok()?;
 
-        println!("COV: {cov}");
-
         let mut eigen_ordering: Vec<_> = (0..eigen_values.len()).collect();
 
         eigen_ordering.sort_by(|i, j| eigen_values[*j].partial_cmp(&eigen_values[*i]).unwrap());

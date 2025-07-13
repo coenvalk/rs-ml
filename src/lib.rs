@@ -123,6 +123,7 @@ pub fn train_test_split<Feature, Label>(
     )
 }
 
+/// Mean of elements in an iterator.
 fn iterative_mean<I, F, R>(it: I) -> Option<R>
 where
     I: IntoIterator<Item = F>,

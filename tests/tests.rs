@@ -19,7 +19,7 @@ use rs_ml::transformer::embedding::OneHotEmbeddingEstimator;
 use rs_ml::transformer::embedding::OneHotEmbeddingTransformer;
 use rs_ml::transformer::embedding::OrderedEnumEmbeddingTransformer;
 use rs_ml::transformer::scalers::MinMaxScalerParams;
-use rs_ml::transformer::scalers::StandardScalerParams;
+use rs_ml::transformer::scalers::StandardScalerEstimator;
 use rs_ml::transformer::FitTransform;
 use rs_ml::transformer::Transformer;
 use rs_ml::Estimator;
@@ -60,7 +60,7 @@ fn standard_scaler() {
         [8., 24., 100.],
     ]);
 
-    let scaler = StandardScalerParams.fit(&arr).unwrap();
+    let scaler = StandardScalerEstimator.fit(&arr).unwrap();
 
     let scaled = scaler.transform(&arr).unwrap();
 
@@ -85,7 +85,7 @@ fn min_max_scaler() {
         0., 1., 2., 9., 77., 3., 3., 2., 10., 2., 2., 90., 8., 24., 100.,
     ];
 
-    let scaler = MinMaxScalerParams::new().fit(&arr).unwrap();
+    let scaler = MinMaxScalerParams::default().fit(&arr).unwrap();
 
     let scaled_values = scaler.transform(&arr).unwrap();
 
@@ -126,7 +126,7 @@ fn test_fit_transform() {
         0., 1., 2., 9., 77., 3., 3., 2., 10., 2., 2., 90., 8., 24., 100.,
     ];
 
-    let scaled_values = MinMaxScalerParams::new().fit_transform(&arr).unwrap();
+    let scaled_values = MinMaxScalerParams::default().fit_transform(&arr).unwrap();
 
     black_box(scaled_values);
 }

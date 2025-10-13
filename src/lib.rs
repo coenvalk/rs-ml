@@ -21,7 +21,9 @@ use std::ops::Div;
 use std::ops::Mul;
 
 use classification::ClassificationDataSet;
+use ndarray::Array1;
 use ndarray::Axis;
+use num_traits::Float;
 
 pub mod classification;
 pub mod dimensionality_reduction;
@@ -68,6 +70,18 @@ pub trait Estimator<Input> {
     /// Fit model or transformer based on given inputs, or None if the estimator was not able to
     /// fit to the input data as expected.
     fn fit(&self, input: &Input) -> Option<Self::Estimator>;
+}
+
+/// Trait to prepare a struct for training or inference
+pub trait Estimatable {
+    /// Prepare for an estimator to train or make inference based on this data
+    fn prepare_for_estimation<F: Float>(&self) -> Array1<F>;
+}
+
+impl<F1: Float> Estimatable for Array1<F1> {
+    fn prepare_for_estimation<F2: Float>(&self) -> Array1<F2> {
+        self.map(|v| F2::from(*v).unwrap())
+    }
 }
 
 /// Train test split result. returns in order training features, testing features, training labels,

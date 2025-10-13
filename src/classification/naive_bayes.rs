@@ -1,6 +1,6 @@
 //! Naive Bayes classifiers
 
-use crate::{Axis, Estimator};
+use crate::{Axis, Estimatable, Estimator};
 use core::f64;
 use ndarray::{Array1, Array2};
 use std::f64::consts::PI;
@@ -47,12 +47,12 @@ pub struct GaussianNB<Label> {
     labels: Vec<Label>,
 }
 
-impl<Label: PartialEq + Clone> Estimator<ClassificationDataSet<Array1<f64>, Label>>
+impl<Input: Estimatable, Label: PartialEq + Clone> Estimator<ClassificationDataSet<Input, Label>>
     for GaussianNBEstimator
 {
     type Estimator = GaussianNB<Label>;
 
-    fn fit(&self, input: &ClassificationDataSet<Array1<f64>, Label>) -> Option<Self::Estimator> {
+    fn fit(&self, input: &ClassificationDataSet<Input, Label>) -> Option<Self::Estimator> {
         let distinct_labels: Vec<_> =
             input
                 .get_labels()
@@ -66,7 +66,12 @@ impl<Label: PartialEq + Clone> Estimator<ClassificationDataSet<Array1<f64>, Labe
                     }
                 });
 
-        let features_vec = input.get_features();
+        let features_vec: Vec<_> = input
+            .get_features()
+            .iter()
+            .map(|i| i.prepare_for_estimation())
+            .collect();
+
         let nrows = features_vec.len();
         let nfeatures = features_vec.first()?.len();
 
@@ -113,22 +118,23 @@ impl<Label: PartialEq + Clone> Estimator<ClassificationDataSet<Array1<f64>, Labe
     }
 }
 
-impl<Label: Clone> Classifier<Array1<f64>, Label> for GaussianNB<Label> {
+impl<Input: Estimatable, Label: Clone> Classifier<Input, Label> for GaussianNB<Label> {
     fn labels(&self) -> &[Label] {
         &self.labels
     }
 
     fn predict_proba<I>(&self, arr: I) -> Option<Array2<f64>>
     where
-        I: Iterator<Item = Array1<f64>>,
+        I: Iterator<Item = Input>,
     {
         let col_count = self.labels.len();
 
         let likelihoods: Vec<_> = arr
             .map(|record| {
+                let arr_record = record.prepare_for_estimation();
                 let mut log_likelihood = -0.5 * (&self.vars.view() * 2.0 * PI).ln();
                 log_likelihood =
-                    log_likelihood - 0.5 * ((record - &self.means).pow2() / self.vars.view());
+                    log_likelihood - 0.5 * ((arr_record - &self.means).pow2() / self.vars.view());
 
                 log_likelihood = log_likelihood + self.priors.view().insert_axis(Axis(1)).ln();
 

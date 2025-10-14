@@ -3,7 +3,7 @@
 use crate::{Axis, Estimatable, Estimator};
 use core::f64;
 use ndarray::{Array1, Array2};
-use std::f64::consts::PI;
+use std::{f64::consts::PI, marker::PhantomData};
 
 use super::{ClassificationDataSet, Classifier};
 
@@ -40,7 +40,8 @@ pub struct GaussianNBEstimator;
 
 /// Represents a fitted Gaussian Naive Bayes Classifier. Created with the `fit()` function implemented for [`GaussianNBEstimator`].
 #[derive(Debug)]
-pub struct GaussianNB<Label> {
+pub struct GaussianNB<Input, Label> {
+    _input: PhantomData<Input>,
     means: Array2<f64>,
     vars: Array2<f64>,
     priors: Array1<f64>,
@@ -50,7 +51,7 @@ pub struct GaussianNB<Label> {
 impl<Input: Estimatable, Label: PartialEq + Clone> Estimator<ClassificationDataSet<Input, Label>>
     for GaussianNBEstimator
 {
-    type Estimator = GaussianNB<Label>;
+    type Estimator = GaussianNB<Input, Label>;
 
     fn fit(&self, input: &ClassificationDataSet<Input, Label>) -> Option<Self::Estimator> {
         let distinct_labels: Vec<_> =
@@ -110,6 +111,7 @@ impl<Input: Estimatable, Label: PartialEq + Clone> Estimator<ClassificationDataS
         }
 
         Some(GaussianNB {
+            _input: PhantomData::default(),
             labels: distinct_labels,
             means,
             vars,
@@ -118,7 +120,7 @@ impl<Input: Estimatable, Label: PartialEq + Clone> Estimator<ClassificationDataS
     }
 }
 
-impl<Input: Estimatable, Label: Clone> Classifier<Input, Label> for GaussianNB<Label> {
+impl<Input: Estimatable, Label: Clone> Classifier<Input, Label> for GaussianNB<Input, Label> {
     fn labels(&self) -> &[Label] {
         &self.labels
     }

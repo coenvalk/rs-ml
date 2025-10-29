@@ -111,7 +111,7 @@ impl<Input: Estimatable, Label: PartialEq + Clone> Estimator<ClassificationDataS
         }
 
         Some(GaussianNB {
-            _input: PhantomData::default(),
+            _input: PhantomData,
             labels: distinct_labels,
             means,
             vars,

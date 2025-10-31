@@ -33,7 +33,7 @@ impl Estimatable for Iris {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut csv = csv::Reader::from_path("iris.csv")?;
+    let mut csv = csv::Reader::from_path("./data/iris.csv")?;
 
     let features: Vec<DataPoint> = csv
         .deserialize::<DataPoint>()
